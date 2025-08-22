@@ -1,20 +1,19 @@
 import { ThemedText } from "@/components/ui/ThemedText";
-import { useAuthStore } from "@/store/authStore";
 import { Image } from "expo-image";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 
-export default function RegisterScreen() {
+export default function RegisterScreen() { 
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const login = useAuthStore((s) => s.login);
+  // const login = useAuthStore((s) => s.login);
 
   const onSubmit = () => {
     if (!phone || !password || password !== confirm) return;
-    login(phone); // фейковая регистрация → автологин
+    // login(phone); // фейковая регистрация → автологин
     router.replace("/(tabs)/home");
   };
 
