@@ -3,6 +3,7 @@
 import CartItem from "@/components/Cart/CartItem"
 import { useBottomTabOverflow } from "@/components/ui/TabBarBackground"
 import { ThemedText } from "@/components/ui/ThemedText"
+import { useSafeArea } from "@/hooks/useSafeArea"
 import { useTheme } from "@/hooks/useTheme"
 import { useCartStore, useOrderStore } from "@/store"
 import { Ionicons } from "@expo/vector-icons"
@@ -14,6 +15,7 @@ import {
   Modal,
   SafeAreaView,
   ScrollView,
+  StatusBar,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -23,6 +25,7 @@ import { Toast } from "toastify-react-native"
 
 const CartScreen: React.FC = () => {
   const {  colors, adaptiveColor } = useTheme()
+  const safeArea = useSafeArea()
 
   const { items: cartItems, subtotal, deliveryCost, total, updateQuantity, removeItem, clearCart } = useCartStore()
 
@@ -82,29 +85,184 @@ const CartScreen: React.FC = () => {
   const bottomTabOverflow = useBottomTabOverflow()
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, padding: 10, paddingBottom: 10 + bottomTabOverflow, backgroundColor: colors.background }}
-    >
-      <View style={styles.container}>
-        {cartItems.length === 0 ? (
-          <View style={styles.empty}>
-            <Ionicons name="card" size={80} color="#aaa" />
-            <ThemedText style={styles.emptyTitle}>Ваша корзина пуста</ThemedText>
-            <ThemedText style={styles.emptyText}>Добавьте товары, чтобы совершить покупку</ThemedText>
-          </View>
-        ) : (
-          <>
-            <TouchableOpacity style={styles.clearBtn} onPress={handleClearCart}>
-              <ThemedText style={styles.clearText}>Очистить</ThemedText>
-            </TouchableOpacity>
-            <FlatList
-              data={cartItems}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <CartItem item={item} onUpdateQuantity={handleUpdateQuantity} onRemoveItem={handleRemoveItem} />
-              )}
-              ListFooterComponent={
-                <View style={styles.summary}>
+    <>
+      <StatusBar 
+        barStyle={adaptiveColor("dark-content", "light-content") as "dark-content" | "light-content"}
+        backgroundColor={colors.background}
+        translucent={false}
+      />
+      <SafeAreaView
+        style={{ 
+          flex: 1, 
+          padding: 10, 
+          paddingTop: 10 + safeArea.getTopPadding(),
+          paddingBottom: 10 + bottomTabOverflow + safeArea.getBottomPadding(), 
+          backgroundColor: colors.background 
+        }}
+      >
+        <View style={styles.container}>
+          {cartItems.length === 0 ? (
+            <View style={styles.empty}>
+              <Ionicons name="card" size={80} color="#aaa" />
+              <ThemedText style={styles.emptyTitle}>Ваша корзина пуста</ThemedText>
+              <ThemedText style={styles.emptyText}>Добавьте товары, чтобы совершить покупку</ThemedText>
+            </View>
+          ) : (
+            <>
+              <TouchableOpacity style={styles.clearBtn} onPress={handleClearCart}>
+                <ThemedText style={styles.clearText}>Очистить</ThemedText>
+              </TouchableOpacity>
+              <FlatList
+                data={cartItems}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <CartItem item={item} onUpdateQuantity={handleUpdateQuantity} onRemoveItem={handleRemoveItem} />
+                )}
+                ListFooterComponent={
+                  <View style={styles.summary}>
+                    <View style={styles.summaryRow}>
+                      <ThemedText>Товары ({cartItems.length})</ThemedText>
+                      <ThemedText>{subtotal.toLocaleString("ru-RU")} с</ThemedText>
+                    </View>
+                    <View style={styles.summaryRow}>
+                      <ThemedText>Доставка</ThemedText>
+                      <ThemedText style={{ color: deliveryCost === 0 ? "green" : colors.text }}>
+                        {deliveryCost === 0 ? "Бесплатно" : `${deliveryCost} с`}
+                      </ThemedText>
+                    </View>
+                    <View style={styles.summaryRow}>
+                      <ThemedText style={styles.totalText}>Итого</ThemedText>
+                      <ThemedText style={[styles.totalText, { color: colors.text }]}>
+                        {total.toLocaleString("ru-RU")} с
+                      </ThemedText>
+                    </View>
+
+                    <TouchableOpacity style={styles.checkoutBtn} onPress={handleCheckout}>
+                      <ThemedText style={styles.checkoutText}>Оформить заказ</ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                }
+                contentContainerStyle={{
+                  paddingBottom: bottomTabOverflow,
+                }}
+              />
+            </>
+          )}
+
+          {/* Модалка оформления заказа */}
+          <Modal
+            visible={isCheckoutModalVisible}
+            animationType="slide"
+            presentationStyle="pageSheet"
+            onRequestClose={() => setIsCheckoutModalVisible(false)}
+          >
+            <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+              <View
+                style={[
+                  styles.modalHeader,
+                  {
+                    borderBottomColor: adaptiveColor("#eee", "#333"),
+                    backgroundColor: colors.background,
+                  },
+                ]}
+              >
+                <ThemedText style={styles.modalTitle}>Оформление заказа</ThemedText>
+                <TouchableOpacity onPress={() => setIsCheckoutModalVisible(false)} style={styles.closeButton}>
+                  <Ionicons name="close" size={24} color={adaptiveColor("#666", "#999")} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                <View style={styles.formSection}>
+                  <ThemedText style={styles.sectionTitle}>Контактная информация</ThemedText>
+
+                  <View style={styles.inputContainer}>
+                    <ThemedText style={styles.inputLabel}>Имя *</ThemedText>
+                    <TextInput
+                      style={[
+                        styles.textInput,
+                        {
+                          borderColor: adaptiveColor("#ddd", "#444"),
+                          backgroundColor: adaptiveColor("#f9f9f9", "#2a2a2a"),
+                          color: colors.text,
+                        },
+                      ]}
+                      value={checkoutForm.name}
+                      onChangeText={(text) => setCheckoutForm({ ...checkoutForm, name: text })}
+                      placeholder="Введите ваше имя"
+                      placeholderTextColor={adaptiveColor("#999", "#666")}
+                    />
+                  </View>
+
+                  <View style={styles.inputContainer}>
+                    <ThemedText style={styles.inputLabel}>Телефон *</ThemedText>
+                    <TextInput
+                      style={[
+                        styles.textInput,
+                        {
+                          borderColor: adaptiveColor("#ddd", "#444"),
+                          backgroundColor: adaptiveColor("#f9f9f9", "#2a2a2a"),
+                          color: colors.text,
+                        },
+                      ]}
+                      value={checkoutForm.phone}
+                      onChangeText={(text) => setCheckoutForm({ ...checkoutForm, phone: text })}
+                      placeholder="0700123456"
+                      placeholderTextColor={adaptiveColor("#999", "#666")}
+                      keyboardType="phone-pad"
+                    />
+                  </View>
+
+                  <View style={styles.inputContainer}>
+                    <ThemedText style={styles.inputLabel}>Адрес доставки *</ThemedText>
+                    <TextInput
+                      style={[
+                        styles.textInput,
+                        {
+                          borderColor: adaptiveColor("#ddd", "#444"),
+                          backgroundColor: adaptiveColor("#f9f9f9", "#2a2a2a"),
+                          color: colors.text,
+                        },
+                      ]}
+                      value={checkoutForm.address}
+                      onChangeText={(text) => setCheckoutForm({ ...checkoutForm, address: text })}
+                      placeholder="Введите адрес доставки"
+                      placeholderTextColor={adaptiveColor("#999", "#666")}
+                      multiline
+                      numberOfLines={3}
+                    />
+                  </View>
+
+                  <View style={styles.inputContainer}>
+                    <ThemedText style={styles.inputLabel}>Комментарий к заказу</ThemedText>
+                    <TextInput
+                      style={[
+                        styles.textInput,
+                        {
+                          borderColor: adaptiveColor("#ddd", "#444"),
+                          backgroundColor: adaptiveColor("#f9f9f9", "#2a2a2a"),
+                          color: colors.text,
+                        },
+                      ]}
+                      value={checkoutForm.comment}
+                      onChangeText={(text) => setCheckoutForm({ ...checkoutForm, comment: text })}
+                      placeholder="Дополнительная информация"
+                      placeholderTextColor={adaptiveColor("#999", "#666")}
+                      multiline
+                      numberOfLines={3}
+                    />
+                  </View>
+                </View>
+
+                <View
+                  style={[
+                    styles.orderSummary,
+                    {
+                      backgroundColor: adaptiveColor("#f8f9fa", "#1a1a1a"),
+                    },
+                  ]}
+                >
+                  <ThemedText style={styles.sectionTitle}>Сводка заказа</ThemedText>
                   <View style={styles.summaryRow}>
                     <ThemedText>Товары ({cartItems.length})</ThemedText>
                     <ThemedText>{subtotal.toLocaleString("ru-RU")} с</ThemedText>
@@ -117,171 +275,29 @@ const CartScreen: React.FC = () => {
                   </View>
                   <View style={styles.summaryRow}>
                     <ThemedText style={styles.totalText}>Итого</ThemedText>
-                    <ThemedText style={[styles.totalText, { color: colors.text }]}>
-                      {total.toLocaleString("ru-RU")} с
-                    </ThemedText>
+                    <ThemedText style={styles.totalText}>{total.toLocaleString("ru-RU")} с</ThemedText>
                   </View>
-
-                  <TouchableOpacity style={styles.checkoutBtn} onPress={handleCheckout}>
-                    <ThemedText style={styles.checkoutText}>Оформить заказ</ThemedText>
-                  </TouchableOpacity>
                 </View>
-              }
-              contentContainerStyle={{
-                paddingBottom: bottomTabOverflow,
-              }}
-            />
-          </>
-        )}
-
-        {/* Модалка оформления заказа */}
-        <Modal
-          visible={isCheckoutModalVisible}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setIsCheckoutModalVisible(false)}
-        >
-          <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
-            <View
-              style={[
-                styles.modalHeader,
-                {
-                  borderBottomColor: adaptiveColor("#eee", "#333"),
-                  backgroundColor: colors.background,
-                },
-              ]}
-            >
-              <ThemedText style={styles.modalTitle}>Оформление заказа</ThemedText>
-              <TouchableOpacity onPress={() => setIsCheckoutModalVisible(false)} style={styles.closeButton}>
-                <Ionicons name="close" size={24} color={adaptiveColor("#666", "#999")} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-              <View style={styles.formSection}>
-                <ThemedText style={styles.sectionTitle}>Контактная информация</ThemedText>
-
-                <View style={styles.inputContainer}>
-                  <ThemedText style={styles.inputLabel}>Имя *</ThemedText>
-                  <TextInput
-                    style={[
-                      styles.textInput,
-                      {
-                        borderColor: adaptiveColor("#ddd", "#444"),
-                        backgroundColor: adaptiveColor("#f9f9f9", "#2a2a2a"),
-                        color: colors.text,
-                      },
-                    ]}
-                    value={checkoutForm.name}
-                    onChangeText={(text) => setCheckoutForm({ ...checkoutForm, name: text })}
-                    placeholder="Введите ваше имя"
-                    placeholderTextColor={adaptiveColor("#999", "#666")}
-                  />
-                </View>
-
-                <View style={styles.inputContainer}>
-                  <ThemedText style={styles.inputLabel}>Телефон *</ThemedText>
-                  <TextInput
-                    style={[
-                      styles.textInput,
-                      {
-                        borderColor: adaptiveColor("#ddd", "#444"),
-                        backgroundColor: adaptiveColor("#f9f9f9", "#2a2a2a"),
-                        color: colors.text,
-                      },
-                    ]}
-                    value={checkoutForm.phone}
-                    onChangeText={(text) => setCheckoutForm({ ...checkoutForm, phone: text })}
-                    placeholder="0700123456"
-                    placeholderTextColor={adaptiveColor("#999", "#666")}
-                    keyboardType="phone-pad"
-                  />
-                </View>
-
-                <View style={styles.inputContainer}>
-                  <ThemedText style={styles.inputLabel}>Адрес доставки *</ThemedText>
-                  <TextInput
-                    style={[
-                      styles.textInput,
-                      {
-                        borderColor: adaptiveColor("#ddd", "#444"),
-                        backgroundColor: adaptiveColor("#f9f9f9", "#2a2a2a"),
-                        color: colors.text,
-                      },
-                    ]}
-                    value={checkoutForm.address}
-                    onChangeText={(text) => setCheckoutForm({ ...checkoutForm, address: text })}
-                    placeholder="Введите адрес доставки"
-                    placeholderTextColor={adaptiveColor("#999", "#666")}
-                    multiline
-                    numberOfLines={3}
-                  />
-                </View>
-
-                <View style={styles.inputContainer}>
-                  <ThemedText style={styles.inputLabel}>Комментарий к заказу</ThemedText>
-                  <TextInput
-                    style={[
-                      styles.textInput,
-                      {
-                        borderColor: adaptiveColor("#ddd", "#444"),
-                        backgroundColor: adaptiveColor("#f9f9f9", "#2a2a2a"),
-                        color: colors.text,
-                      },
-                    ]}
-                    value={checkoutForm.comment}
-                    onChangeText={(text) => setCheckoutForm({ ...checkoutForm, comment: text })}
-                    placeholder="Дополнительная информация"
-                    placeholderTextColor={adaptiveColor("#999", "#666")}
-                    multiline
-                    numberOfLines={3}
-                  />
-                </View>
-              </View>
+              </ScrollView>
 
               <View
                 style={[
-                  styles.orderSummary,
+                  styles.modalFooter,
                   {
-                    backgroundColor: adaptiveColor("#f8f9fa", "#1a1a1a"),
+                    borderTopColor: adaptiveColor("#eee", "#333"),
+                    backgroundColor: colors.background,
                   },
                 ]}
               >
-                <ThemedText style={styles.sectionTitle}>Сводка заказа</ThemedText>
-                <View style={styles.summaryRow}>
-                  <ThemedText>Товары ({cartItems.length})</ThemedText>
-                  <ThemedText>{subtotal.toLocaleString("ru-RU")} с</ThemedText>
-                </View>
-                <View style={styles.summaryRow}>
-                  <ThemedText>Доставка</ThemedText>
-                  <ThemedText style={{ color: deliveryCost === 0 ? "green" : colors.text }}>
-                    {deliveryCost === 0 ? "Бесплатно" : `${deliveryCost} с`}
-                  </ThemedText>
-                </View>
-                <View style={styles.summaryRow}>
-                  <ThemedText style={styles.totalText}>Итого</ThemedText>
-                  <ThemedText style={styles.totalText}>{total.toLocaleString("ru-RU")} с</ThemedText>
-                </View>
+                <TouchableOpacity style={styles.submitButton} onPress={handleSubmitOrder}>
+                  <ThemedText style={styles.submitButtonText}>Подтвердить заказ</ThemedText>
+                </TouchableOpacity>
               </View>
-            </ScrollView>
-
-            <View
-              style={[
-                styles.modalFooter,
-                {
-                  borderTopColor: adaptiveColor("#eee", "#333"),
-                  backgroundColor: colors.background,
-                },
-              ]}
-            >
-              <TouchableOpacity style={styles.submitButton} onPress={handleSubmitOrder}>
-                <ThemedText style={styles.submitButtonText}>Подтвердить заказ</ThemedText>
-              </TouchableOpacity>
-            </View>
-          </SafeAreaView>
-        </Modal>
-      </View>
-    </SafeAreaView>
+            </SafeAreaView>
+          </Modal>
+        </View>
+      </SafeAreaView>
+    </>
   )
 }
 

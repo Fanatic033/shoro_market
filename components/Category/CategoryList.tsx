@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { FlatList, StyleSheet } from "react-native";
 import CategoryCard from "./CategoryCard";
@@ -6,8 +5,6 @@ import CategoryCard from "./CategoryCard";
 interface Category {
   id: string;
   title: string;
-  iconName: keyof typeof Ionicons.glyphMap;
-  bgColor: string;
 }
 
 interface CategoryListProps {
@@ -28,8 +25,6 @@ const CategoryList: React.FC<CategoryListProps> = ({
         <CategoryCard
           id={item.id}
           title={item.title}
-          iconName={item.iconName}
-          bgColor={item.bgColor}
           selected={selectedCategory === item.id}
           onPress={onSelect}
         />

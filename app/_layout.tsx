@@ -38,8 +38,8 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
           <SafeAreaProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
             <Stack>
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -47,8 +47,8 @@ export default function RootLayout() {
             </Stack>
             <StatusBar style="auto" />
             {Platform.OS !== "web" && <ToastManager position="bottom" />}
-          </SafeAreaProvider>
         </GestureHandlerRootView>
+          </SafeAreaProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )

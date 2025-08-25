@@ -4,25 +4,28 @@ import ProductCard from "@/components/ProductCard";
 import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
 import { Widget } from "@/components/ui/Widget";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useSafeArea } from "@/hooks/useSafeArea";
 import { useCartStore, useProductStore } from "@/store";
 import { Colors } from "@/utils/constants/Colors";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    Easing,
-    FlatList,
-    RefreshControl,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    View
+  Animated,
+  Dimensions,
+  Easing,
+  FlatList,
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  View
 } from "react-native";
 
 const HomeScreen = () => {
   const router = useRouter();
+  const safeArea = useSafeArea();
   const { selectedCategory, setSelectedCategory, categories, getFilteredProducts } =
     useProductStore();
 
@@ -45,22 +48,28 @@ const HomeScreen = () => {
   const orders = [
     {
       id: "#1245",
-      status: "delivered",
+      status: "delivered" as const,
       createdAt: new Date(),
       total: 850,
+      deliveryAddress: "ул. Ленина, 1",
+      customerName: "Иван Иванов",
+      customerPhone: "+996 555 123 456",
       items: [
-        { id: 1, title: "Бургер", quantity: 2, price: 250 },
-        { id: 2, title: "Кола", quantity: 1, price: 100 },
-        { id: 3, title: "Фри", quantity: 1, price: 250 },
+        { id: 1, title: "Бургер", quantity: 2, price: 250, image: null },
+        { id: 2, title: "Кола", quantity: 1, price: 100, image: null },
+        { id: 3, title: "Фри", quantity: 1, price: 250, image: null },
       ],
     },
     {
       id: "#1244",
-      status: "preparing",
-      createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+      status: "preparing" as const,
+      createdAt: new Date(Date.now() - 1000 * 60 * 60),
       total: 450,
+      deliveryAddress: "ул. Пушкина, 10",
+      customerName: "Петр Петров",
+      customerPhone: "+996 555 654 321",
       items: [
-        { id: 4, title: "Пицца Маргарита", quantity: 1, price: 450 },
+        { id: 4, title: "Пицца Маргарита", quantity: 1, price: 450, image: null },
       ],
     },
   ];
@@ -186,61 +195,75 @@ const HomeScreen = () => {
   const bottomTabOverflow = useBottomTabOverflow();
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: Colors[scheme].background }]}>
-      <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ alignItems: "center" }}
-      >
-        <View style={styles.contentWrapper}>
-          {/* Widgets */}
-          <FlatList
-            data={widgets}
-            renderItem={Widget}
-            keyExtractor={(item) => item.id.toString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.widgetsContainer}
-          />
+    <>
+      <StatusBar 
+        barStyle={scheme === "dark" ? "light-content" : "dark-content"}
+        backgroundColor={Colors[scheme].background}
+        translucent={false}
+      />
+      <SafeAreaView style={[
+        styles.container, 
+        { 
+          backgroundColor: Colors[scheme].background,
+          paddingTop: safeArea.getTopPadding(),
+          paddingBottom: safeArea.getBottomPadding()
+        }
+      ]}>
+        <ScrollView
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ alignItems: "center" }}
+        >
+          <View style={styles.contentWrapper}>
+            {/* Widgets */}
+            <FlatList
+              data={widgets}
+              renderItem={Widget}
+              keyExtractor={(item) => item.id.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.widgetsContainer}
+            />
 
-          <View style={styles.ordersRow}>
-            <OrderCard order={lastTwoOrders[0]} index={0} />
-            <OrderCard order={lastTwoOrders[1]} index={1} />
+            <View style={styles.ordersRow}>
+              <OrderCard order={lastTwoOrders[0]} index={0} />
+              <OrderCard order={lastTwoOrders[1]} index={1} />
+            </View>
+
+            {/* Categories */}
+            <CategoryList
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onSelect={setSelectedCategory}
+            />
+
+            {/* Products Grid */}
+            <FlatList
+              data={getFilteredProducts()}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={numColumns}
+              renderItem={({ item }) => (
+                <ProductCard
+                  item={item}
+                  isDark={isDark}
+                  getControlWidth={getControlWidth}
+                  addToCart={addToCart}
+                  increaseQty={increaseQty}
+                  decreaseQty={decreaseQty}
+                  CARD_WIDTH={CARD_WIDTH}
+                />
+              )}
+              scrollEnabled={false}
+              columnWrapperStyle={{ justifyContent: "center", gap: GUTTER }}
+              contentContainerStyle={{
+                paddingBottom: bottomTabOverflow,
+                paddingHorizontal: OUTER_HORIZONTAL_PADDING / 2,
+              }}
+            />
           </View>
-
-          {/* Categories */}
-          <CategoryList
-            categories={categories}
-            selectedCategory={selectedCategory}
-            onSelect={setSelectedCategory}
-          />
-
-          {/* Products Grid */}
-          <FlatList
-            data={getFilteredProducts()}
-            keyExtractor={(item) => item.id.toString()}
-            numColumns={numColumns}
-            renderItem={({ item }) => (
-              <ProductCard
-                item={item}
-                isDark={isDark}
-                getControlWidth={getControlWidth}
-                addToCart={addToCart}
-                increaseQty={increaseQty}
-                decreaseQty={decreaseQty}
-                CARD_WIDTH={CARD_WIDTH}
-              />
-            )}
-            scrollEnabled={false}
-            columnWrapperStyle={{ justifyContent: "center", gap: GUTTER }}
-            contentContainerStyle={{
-              paddingBottom: bottomTabOverflow,
-              paddingHorizontal: OUTER_HORIZONTAL_PADDING / 2,
-            }}
-          />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </>
   );
 };
 

@@ -1,14 +1,20 @@
 import { ThemedText } from "@/components/ui/ThemedText";
 import { useLogin } from "@/services/useLogin";
 import { useAuthStore } from "@/store/authStore";
+import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Toast } from "toastify-react-native";
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const toggleShowPassword = () => {
+      setShowPassword(!showPassword);
+  };
   
   const { mutate: login, isPending, error } = useLogin();
   const setUser = useAuthStore((s) => s.setUser);
@@ -32,14 +38,14 @@ export default function LoginScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       {/* Логотип */}
       <View style={styles.logo}>
-        <Image
+        {/* <Image
           source={require("../../assets/images/man.png")}
           style={styles.logoImage}
-        />
+        /> */}
       </View>
 
       {/* Карточка */}
-      <View style={styles.card}>
+      <KeyboardAvoidingView style={styles.card}>
         <ThemedText style={styles.subtext}>
           С возвращением — введите свои данные, чтобы продолжить
         </ThemedText>
@@ -54,18 +60,26 @@ export default function LoginScreen() {
   onChangeText={setUsername}
   placeholderTextColor={'gray'}
 />
+<ThemedText style={styles.label}>Пароль</ThemedText>
+<View style={styles.passwordWrapper}>
+  <TextInput
+    style={styles.inputPassword}
+    placeholder="Введите пароль"
+    secureTextEntry={!showPassword}
+    value={password}
+    onChangeText={setPassword}
+    placeholderTextColor="gray"
+  />
 
-        {/* Пароль */}
-        <ThemedText style={styles.label}>Пароль</ThemedText>
-        <TextInput
-          style={styles.input}
-          placeholder="Введите пароль"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-  placeholderTextColor={'gray'}
+  <Pressable onPress={toggleShowPassword} style={styles.iconWrapper}>
+    <Ionicons
+      name={showPassword ? "eye-off" : "eye"}
+      size={22}
+      color="#777"
+    />
+  </Pressable>
+</View>
 
-        />
 
         {/* Кнопка */}
         <Pressable style={styles.button} onPress={onSubmit} disabled={isPending}>
@@ -90,7 +104,7 @@ export default function LoginScreen() {
             Зарегистрироваться
           </Link>
         </ThemedText>
-      </View>
+      </KeyboardAvoidingView>
     </ScrollView>
   );
 }
@@ -107,7 +121,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: "#fff",
+    backgroundColor: "#e53935",
     alignItems: "center",
     justifyContent: "center",
     elevation: 4,
@@ -169,5 +183,25 @@ const styles = StyleSheet.create({
   linkText: {
     color: "#e53935",
     fontWeight: "700",
+  },
+  passwordWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    backgroundColor: "#fafafa",
+    height: 48,
+    paddingHorizontal: 8,
+    marginBottom: 8,
+  },
+  inputPassword: {
+    flex: 1,
+    height: "100%",
+    fontSize: 15,
+    color: "#000",
+  },
+  iconWrapper: {
+    padding: 6,
   },
 });

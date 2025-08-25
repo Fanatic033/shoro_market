@@ -1,37 +1,36 @@
 import { ThemedText } from "@/components/ui/ThemedText";
-import { Image } from "expo-image";
+import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-export default function RegisterScreen() { 
+export default function RegisterScreen() {
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  // const login = useAuthStore((s) => s.login);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const onSubmit = () => {
     if (!phone || !password || password !== confirm) return;
-    // login(phone); // фейковая регистрация → автологин
     router.replace("/(tabs)/home");
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.logo}>
-        <Image
-          source={require("../../assets/images/man.png")}          
-          style={styles.logoImage}
-        />
-      </View>
-
-      {/* Карточка */}
-      <View style={styles.card}>
+      <KeyboardAvoidingView style={styles.card}>
         <ThemedText style={styles.subtext}>
           Создайте аккаунт — это займет меньше минуты
         </ThemedText>
-
 
         <ThemedText style={styles.label}>Имя</ThemedText>
         <TextInput
@@ -41,6 +40,7 @@ export default function RegisterScreen() {
           autoCapitalize="none"
           value={name}
           onChangeText={setName}
+          placeholderTextColor={"gray"}
         />
 
         <ThemedText style={styles.label}>Телефон</ThemedText>
@@ -51,27 +51,55 @@ export default function RegisterScreen() {
           autoCapitalize="none"
           value={phone}
           onChangeText={setPhone}
+          placeholderTextColor={"gray"}
         />
 
         {/* Пароль */}
         <ThemedText style={styles.label}>Пароль</ThemedText>
-        <TextInput
-          style={styles.input}
-          placeholder="Введите пароль"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        <View style={styles.passwordWrapper}>
+          <TextInput
+            style={styles.inputPassword}
+            placeholder="Введите пароль"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+            placeholderTextColor="gray"
+          />
+          <Pressable
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.iconWrapper}
+          >
+            <Ionicons
+              name={showPassword ? "eye-off" : "eye"}
+              size={22}
+              color="#777"
+            />
+          </Pressable>
+        </View>
 
         {/* Повтор пароля */}
         <ThemedText style={styles.label}>Повторите пароль</ThemedText>
-        <TextInput
-          style={styles.input}
-          placeholder="Повторите пароль"
-          secureTextEntry
-          value={confirm}
-          onChangeText={setConfirm}
-        />
+        <View style={styles.passwordWrapper}>
+          <TextInput
+            style={styles.inputPassword}
+            placeholder="Повторите пароль"
+            secureTextEntry={!showConfirm}
+            value={confirm}
+            onChangeText={setConfirm}
+            placeholderTextColor="gray"
+          />
+          <Pressable
+            onPress={() => setShowConfirm(!showConfirm)}
+            style={styles.iconWrapper}
+          >
+            <Ionicons
+              name={showConfirm ? "eye-off" : "eye"}
+              size={22}
+              color="#777"
+            />
+          </Pressable>
+        </View>
+        
 
         {/* Кнопка */}
         <TouchableOpacity style={styles.button} onPress={onSubmit}>
@@ -85,7 +113,7 @@ export default function RegisterScreen() {
             Войти
           </Link>
         </ThemedText>
-      </View>
+      </KeyboardAvoidingView>
     </ScrollView>
   );
 }
@@ -97,20 +125,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     paddingTop: 60,
-  },
-  logo: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 4,
-  },
-  logoImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
   },
   card: {
     width: "100%",
@@ -141,6 +155,26 @@ const styles = StyleSheet.create({
     height: 48,
     borderWidth: 1,
     borderColor: "#ddd",
+  },
+  passwordWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    backgroundColor: "#fafafa",
+    height: 48,
+    paddingHorizontal: 8,
+    marginBottom: 8,
+  },
+  inputPassword: {
+    flex: 1,
+    height: "100%",
+    fontSize: 15,
+    color: "#000",
+  },
+  iconWrapper: {
+    padding: 6,
   },
   button: {
     backgroundColor: "#e53935",

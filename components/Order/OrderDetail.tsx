@@ -1,0 +1,234 @@
+import { ThemedText } from "@/components/ui/ThemedText";
+import { Order } from "@/store";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+
+type OrderStatus = Order["status"];
+type OrderItem = Order["items"][0];
+
+const getStatusColor = (status: OrderStatus) => {
+  switch (status) {
+    case "delivered":
+      return { bg: "#e8f8f0", text: "#1e7e34" };
+    case "preparing":
+      return { bg: "#fff4e5", text: "#b85c00" };
+    case "cancelled":
+      return { bg: "#fdecec", text: "#c81e1e" };
+    case "pending":
+      return { bg: "#eff6ff", text: "#1d4ed8" };
+    case "confirmed":
+      return { bg: "#eff6ff", text: "#1d4ed8" };
+    case "delivering":
+      return { bg: "#ecfeff", text: "#155e75" };
+    default:
+      return { bg: "#eee", text: "#333" };
+  }
+};
+
+type Props = {
+  order: Order;
+  isMenuOpen: boolean;
+  onToggleMenu: () => void;
+  onCloseMenu: () => void;
+};
+
+const OrderCard: React.FC<Props> = ({ order, isMenuOpen, onToggleMenu, onCloseMenu }) => {
+  const colors = getStatusColor(order.status);
+  const router = useRouter();
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <ThemedText style={styles.orderId}>{order.id}</ThemedText>
+        <View style={styles.headerRight}>
+          <View style={[styles.statusBadge, { backgroundColor: colors.bg }]}>
+            <ThemedText style={[styles.statusText, { color: colors.text }]}>
+              {order.status === "delivered"
+                ? "Доставлен"
+                : order.status === "preparing"
+                ? "Готовится"
+                : order.status === "pending"
+                ? "В ожидании"
+                : order.status === "confirmed"
+                ? "Подтверждён"
+                : order.status === "delivering"
+                ? "В пути"
+                : "Отменён"}
+            </ThemedText>
+          </View>
+          <TouchableOpacity
+            onPress={onToggleMenu}
+            accessibilityLabel="Показать меню заказа"
+            style={styles.menuButton}
+          >
+            <Ionicons name="ellipsis-vertical" size={20} color="#6b7280" />
+          </TouchableOpacity>
+          {isMenuOpen && (
+            <View style={styles.dropdown}>
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => {
+                  onCloseMenu();
+                  // Логика повторного заказа
+                }}
+              >
+                <Ionicons name="refresh" size={16} color="#111827" />
+                <ThemedText style={styles.dropdownItemText}>
+                  Повторить
+                </ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => {
+                  onCloseMenu();
+                  router.push({
+                    pathname: "/order/[id]",
+                    params: { id: order.id },
+                  });
+                }}
+                accessibilityLabel="Перейти к деталям заказа"
+              >
+                <Ionicons
+                  name="document-text-outline"
+                  size={16}
+                  color="#111827"
+                />
+                <ThemedText style={styles.dropdownItemText}>
+                  Детали
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </View>
+
+      <View style={styles.superRow}>
+        <View style={[styles.row, { marginBottom: 0 }]}>
+          <Ionicons name="calendar" size={16} color="#6b7280" />
+          <ThemedText style={styles.metaText}>{new Date(order.createdAt).toLocaleDateString("ru-RU")}</ThemedText>
+        </View>
+        <View style={[styles.row, { marginBottom: 0 }]}>
+          <Ionicons name="cube" size={16} color="#6b7280" />
+          <ThemedText style={styles.metaText}>
+            Товаров: {order.items.reduce((s, it) => s + it.quantity, 0)}
+          </ThemedText>
+        </View>
+      </View>
+
+      <View style={[styles.row, { marginBottom: 10 }]}>
+        <Ionicons name="cash" size={16} color="#6b7280" />
+        <ThemedText style={[styles.metaText, styles.total]}>
+          Итого: {order.total.toLocaleString("ru-RU")} ₽
+        </ThemedText>
+      </View>
+
+      <View style={styles.itemsPreview}>
+        {order.items.slice(0, 3).map((it) => (
+          <ThemedText key={it.id} numberOfLines={1} style={styles.itemLine}>
+            • {it.title} × {it.quantity}
+          </ThemedText>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+export default OrderCard;
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    position: "relative",
+  },
+  menuButton: {
+    padding: 4,
+    borderRadius: 4,
+  },
+  dropdown: {
+    position: "absolute",
+    top: 32,
+    right: 0,
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    paddingVertical: 4,
+    minWidth: 140,
+    zIndex: 10,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  orderId: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#2c3e50",
+  },
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  superRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 6,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 6,
+  },
+  metaText: {
+    color: "#374151",
+    fontSize: 14,
+  },
+  total: {
+    fontWeight: "700",
+  },
+  itemsPreview: {
+    marginTop: 6,
+    marginBottom: 10,
+  },
+  itemLine: {
+    fontSize: 13,
+    color: "#4b5563",
+  },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  dropdownItemText: {
+    fontSize: 13,
+    color: "#111827",
+    fontWeight: "600",
+  },
+});
