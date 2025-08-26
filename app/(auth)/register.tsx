@@ -54,7 +54,6 @@ export default function RegisterScreen() {
           placeholderTextColor={"gray"}
         />
 
-        {/* Пароль */}
         <ThemedText style={styles.label}>Пароль</ThemedText>
         <View style={styles.passwordWrapper}>
           <TextInput
@@ -77,7 +76,6 @@ export default function RegisterScreen() {
           </Pressable>
         </View>
 
-        {/* Повтор пароля */}
         <ThemedText style={styles.label}>Повторите пароль</ThemedText>
         <View style={styles.passwordWrapper}>
           <TextInput
@@ -106,7 +104,6 @@ export default function RegisterScreen() {
           <ThemedText style={styles.buttonText}>Создать аккаунт</ThemedText>
         </TouchableOpacity>
 
-        {/* Ссылка */}
         <ThemedText style={styles.link}>
           Уже есть аккаунт?{" "}
           <Link href="/(auth)/login" style={styles.linkText}>

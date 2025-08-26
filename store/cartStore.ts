@@ -11,6 +11,7 @@ export interface CartItem {
   isNew?: boolean;
   isHit?: boolean;
   discount?: number;
+  inpackage?: number | null;
 }
 
 interface CartState {
@@ -28,6 +29,7 @@ interface CartState {
   getItemQuantity: (id: number) => number;
   isInCart: (id: number) => boolean;
   updateCalculations: () => void;
+  addItemsFromOrder: (items: CartItem[]) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -100,11 +102,63 @@ export const useCartStore = create<CartState>()(
       updateCalculations: () => {
         const state = get();
         const totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
-        const subtotal = state.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const subtotal = state.items.reduce((sum, item) => {
+          const packSize = item.inpackage && item.inpackage > 1 ? item.inpackage : 1;
+          return sum + (item.price * packSize * item.quantity);
+        }, 0);
         const deliveryCost = subtotal > 50000 ? 0 : 500; // Бесплатная доставка от 50000 сом
         const total = subtotal + deliveryCost;
         
         set({ totalItems, subtotal, deliveryCost, total });
+      },
+
+      // Добавляет товары из прошлого заказа, суммируя количество с текущей корзиной
+      addItemsFromOrder: (orderItems) => {
+        const resolveImageForTitle = (title?: string) => {
+          const name = (title || '').toLowerCase();
+          try {
+            if (name.includes('квас')) return require('../assets/images/shoro.png');
+            if (name.includes('тан')) return require('../assets/images/shoro1.png');
+            if (name.includes('вода') || name.includes('легенда')) return require('../assets/images/shoro2.png');
+            if (name.includes('стакан')) return require('../assets/images/shoro1.png');
+            return require('../assets/images/shoro.png');
+          } catch {
+            return undefined as any;
+          }
+        };
+
+        set((state) => {
+          const nextItems = [...state.items];
+
+          for (const orderItem of orderItems) {
+            const existingIndex = nextItems.findIndex(i => i.id === orderItem.id);
+            const image = orderItem.image || resolveImageForTitle(orderItem.title);
+            if (existingIndex >= 0) {
+              nextItems[existingIndex] = {
+                ...nextItems[existingIndex],
+                quantity: nextItems[existingIndex].quantity + orderItem.quantity,
+                image: nextItems[existingIndex].image || image,
+              };
+            } else {
+              nextItems.push({
+                id: orderItem.id,
+                title: orderItem.title,
+                price: orderItem.price,
+                originalPrice: orderItem.originalPrice,
+                image,
+                isNew: orderItem.isNew,
+                isHit: orderItem.isHit,
+                discount: orderItem.discount,
+                inpackage: orderItem.inpackage,
+                quantity: orderItem.quantity,
+              });
+            }
+          }
+
+          return { items: nextItems };
+        });
+
+        get().updateCalculations();
       },
     }),
     {

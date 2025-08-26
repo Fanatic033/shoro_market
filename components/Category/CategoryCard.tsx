@@ -60,7 +60,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   );
 };
 
-export default CategoryCard;
+export default React.memo(CategoryCard, (prev, next) => {
+  return prev.id === next.id && prev.selected === next.selected && prev.title === next.title;
+});
 
 const styles = StyleSheet.create({
   categoryCard: {

@@ -1,25 +1,37 @@
+import { useAuthStore } from '@/store/authStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { router } from 'expo-router';
 import { SERVER_URL } from './constants/constant';
 
-// Замени на свой API URL
 const API_BASE_URL =  SERVER_URL // для разработки
 
 const axiosApi = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Interceptor для добавления токена в запросы
 axiosApi.interceptors.request.use(
-  (config) => {
-    // Можно добавить токен из AsyncStorage или другого места
-    // const token = getAuthToken();
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+  async (config) => {
+    try {
+      const raw = await AsyncStorage.getItem('auth-storage');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const token = parsed?.state?.user?.jwtToken;
+        if (token) {
+          const headers: any = config.headers || {};
+          // Axios v1 may use AxiosHeaders; setting via object works when casting
+          headers.Authorization = `Bearer ${token}`;
+          config.headers = headers;
+        }
+      }
+    } catch(e) {
+      // ignore
+      console.error(e)
+    }
     return config;
   },
   (error) => {
@@ -36,7 +48,18 @@ axiosApi.interceptors.response.use(
     // Глобальная обработка ошибок
     if (error.response?.status === 401) {
       // Пользователь не авторизован
-      console.log('Unauthorized - redirect to login');
+      try {
+        // Сбрасываем состояние авторизации и уводим на логин
+        useAuthStore.getState().logout();
+      } catch (e) { 
+        console.error(e)
+       }
+      try {
+        router.replace('/login');
+      } catch (e) { 
+        console.error(e)
+       }
+      
     } else if (error.response?.status === 500) {
       // Серверная ошибка
       console.error('Server error:', error.response.data);

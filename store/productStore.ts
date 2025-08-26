@@ -13,6 +13,7 @@ export interface Product {
   category: string;
   description?: string;
   inStock: boolean;
+  inpackage?: number | null;
 }
 
 export interface Category {
@@ -29,134 +30,89 @@ interface ProductState {
   selectedCategory: string;
   searchQuery: string;
   sortBy: 'default' | 'price_asc' | 'price_desc' | 'name' | 'newest';
+  isLoading?: boolean;
+  error?: string | null;
   
   // Actions
   setSelectedCategory: (category: string) => void;
   setSearchQuery: (query: string) => void;
   setSortBy: (sort: 'default' | 'price_asc' | 'price_desc' | 'name' | 'newest') => void;
+  loadRemoteProducts: () => Promise<void>;
   getFilteredProducts: () => Product[];
-  getProductsByCategory: (category: string) => Product[];
-  getProductById: (id: number) => Product | undefined;
 }
 
 export const useProductStore = create<ProductState>((set, get) => ({
-  products: [
-    {
-      id: 1,
-      title: "ШОРО Чалап Классический 0.5л",
-      price: 65,
-      originalPrice: 75,
-      image: require("../assets/images/shoro1.png"),
-      isNew: true,
-      category: 'popular',
-      description: 'Традиционный напиток из кисломолочных продуктов',
-      inStock: true
-    },
-    {
-      id: 2,
-      title: "ШОРО Айран Традиционный 0.5л",
-      price: 60,
-      image: require("../assets/images/shoro.png"),
-      isHit: true,
-      isNew: true,
-      category: 'popular',
-      description: 'Натуральный айран с традиционным вкусом',
-      inStock: true
-    },
-    {
-      id: 3,
-      title: "ШОРО Боза Домашняя 0.5л",
-      price: 80,
-      originalPrice: 90,
-      image: require("../assets/images/shoro2.png"),
-      discount: 11,
-      category: 'hits',
-      description: 'Домашний квас из ржаного хлеба',
-      inStock: true
-    },
-    {
-      id: 4,
-      title: "ШОРО Тан с мятой 0.5л",
-      price: 70,
-      image: require("../assets/images/shoro1.png"),
-      isNew: true,
-      category: 'new',
-      description: 'Освежающий тан с добавлением мяты',
-      inStock: true
-    },
-    {
-      id: 5,
-      title: "ШОРО Минералка Газ. 1л",
-      price: 85,
-      originalPrice: 95,
-      image: require("../assets/images/shoro2.png"),
-      isHit: true,
-      category: 'hits',
-      description: 'Газированная минеральная вода',
-      inStock: true
-    },
-    {
-      id: 6,
-      title: "ШОРО Лимонад Дюшес 0.5л",
-      price: 90,
-      image: require("../assets/images/shoro1.png"),
-      category: 'popular',
-      description: 'Освежающий лимонад с грушевым вкусом',
-      inStock: true
-    },
-    {
-      id: 7,
-      title: "ШОРО Квас Белый 0.5л",
-      price: 95,
-      originalPrice: 105,
-      image: require("../assets/images/shoro.png"),
-      isNew: true,
-      category: 'new',
-      description: 'Белый квас с мягким вкусом',
-      inStock: true
-    },
-    {
-      id: 8,
-      title: "ШОРО Компот Абрикос 1л",
-      price: 120,
-      image: require("../assets/images/shoro1.png"),
-      category: 'popular',
-      description: 'Сладкий компот из абрикосов',
-      inStock: true
-    },
-  ],
+  products: [],
 
   categories: [
     {
-      id: 'popular',
-      title: 'Популярное',
-      iconName: 'flame',
-      gradient: ['#DC143C', '#B22222'],
-      bgColor: '#FFFFFF'
-    },
-    {
-      id: 'new',
-      title: 'Новинки',
-      iconName: 'sparkles',
-      gradient: ['#000000', '#333333'],
-      bgColor: '#F8F8F8'
-    },
-    {
-      id: 'hits',
-      title: 'Хиты продаж',
-      iconName: 'star',
-      gradient: ['#DC143C', '#B22222'],
+      id: 'all',
+      title: 'Все',
+      iconName: 'grid',
+      gradient: ['#DC143C', '#B22222'] as [string, string],
       bgColor: '#FFFFFF'
     }
   ],
 
-  selectedCategory: 'popular',
+  selectedCategory: 'all',
   searchQuery: '',
   sortBy: 'default',
+  isLoading: false,
+  error: null,
 
   setSelectedCategory: (category) => set({ selectedCategory: category }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setSortBy: (sort) => set({ sortBy: sort }),
+  loadRemoteProducts: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      const { loadAndMergeProducts } = await import('../services/products');
+      const merged = await loadAndMergeProducts();
+      // Map merged to Product type
+      const products = merged.map(m => ({
+        id: m.id,
+        title: m.title,
+        price: m.price,
+        image: m.image,
+        category: m.category,
+        inStock: m.inStock,
+        inpackage: m.inpackage,
+      }));
+      // Build categories from product categories
+      const categoryNames = Array.from(new Set(products.map(p => p.category))).filter(Boolean);
+      const mapIcon = (name: string): keyof typeof Ionicons.glyphMap => {
+        const lower = name.toLowerCase();
+        if (lower.includes('вода')) return 'water';
+        if (lower.includes('снеки')) return 'fast-food';
+        if (lower.includes('стакан')) return 'cafe';
+        if (lower.includes('товар')) return 'pricetags';
+        if (lower.includes('бут') || lower.includes('напит')) return 'beer';
+        if (lower.includes('проч')) return 'apps';
+        if (lower.includes('нац')) return 'flag';
+        return 'pricetag';
+      };
+      const dynamicCategories: Category[] = [
+        {
+          id: 'all',
+          title: 'Все',
+          iconName: 'grid',
+          gradient: ['#DC143C', '#B22222'] as [string, string],
+          bgColor: '#FFFFFF',
+        },
+        ...categoryNames.map((name) => ({
+          id: name,
+          title: name,
+          iconName: mapIcon(name),
+          gradient: ['#000000', '#333333'] as [string, string],
+          bgColor: '#F8F8F8',
+        })),
+      ];
+
+      set({ products, categories: dynamicCategories, selectedCategory: 'all', isLoading: false });
+    } catch (e: any) {
+      set({ isLoading: false, error: e?.message || 'Failed to load products' });
+    }
+  },
 
   getFilteredProducts: () => {
     const { products, selectedCategory, searchQuery, sortBy } = get();
@@ -164,7 +120,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
     let filtered = products;
     
     // Фильтр по категории
-    if (selectedCategory !== 'popular') {
+    if (selectedCategory !== 'all') {
       filtered = filtered.filter(p => p.category === selectedCategory);
     }
     
@@ -188,27 +144,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
         filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title));
         break;
       case 'newest':
-        filtered = [...filtered].sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+        filtered = [...filtered];
         break;
       default:
-        // По умолчанию: сначала новинки, потом хиты, потом остальные
-        filtered = [...filtered].sort((a, b) => {
-          if (a.isNew && !b.isNew) return -1;
-          if (!a.isNew && b.isNew) return 1;
-          if (a.isHit && !b.isHit) return -1;
-          if (!a.isHit && b.isHit) return 1;
-          return 0;
-        });
+        // По умолчанию: без изменения порядка
+        filtered = [...filtered];
     }
     
     return filtered;
-  },
-
-  getProductsByCategory: (category) => {
-    return get().products.filter(p => p.category === category);
-  },
-
-  getProductById: (id) => {
-    return get().products.find(p => p.id === id);
   },
 }));

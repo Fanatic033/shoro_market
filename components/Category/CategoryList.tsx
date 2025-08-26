@@ -18,18 +18,21 @@ const CategoryList: React.FC<CategoryListProps> = ({
   selectedCategory,
   onSelect,
 }) => {
+  const keyExtractor = React.useCallback((item: Category) => item.id, []);
+  const renderItem = React.useCallback(({ item }: { item: Category }) => (
+    <CategoryCard
+      id={item.id}
+      title={item.title}
+      selected={selectedCategory === item.id}
+      onPress={onSelect}
+    />
+  ), [onSelect, selectedCategory]);
+
   return (
     <FlatList
       data={categories}
-      renderItem={({ item }) => (
-        <CategoryCard
-          id={item.id}
-          title={item.title}
-          selected={selectedCategory === item.id}
-          onPress={onSelect}
-        />
-      )}
-      keyExtractor={(item) => item.id}
+      renderItem={renderItem}
+      keyExtractor={keyExtractor}
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.categoriesContainer}
@@ -37,7 +40,7 @@ const CategoryList: React.FC<CategoryListProps> = ({
   );
 };
 
-export default CategoryList;
+export default React.memo(CategoryList);
 
 const styles = StyleSheet.create({
   categoriesContainer: {

@@ -1,6 +1,7 @@
 import OrderCard from "@/components/Order/OrderDetail";
 import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
 import { ThemedText } from "@/components/ui/ThemedText";
+import { useSafeArea } from "@/hooks/useSafeArea";
 import { Order } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useState } from "react";
@@ -54,6 +55,9 @@ const OrderHistoryScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [menuOpenOrderId, setMenuOpenOrderId] = useState<string | null>(null);
   const bottomTabOverflow = useBottomTabOverflow();
+  const { getTopPadding, getBottomPadding } = useSafeArea();
+  const topPadding = getTopPadding();
+  const bottomPadding = getBottomPadding();
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -66,7 +70,13 @@ const OrderHistoryScreen: React.FC = () => {
   const closeMenu = () => setMenuOpenOrderId(null);
 
   return (
-    <SafeAreaView style={{ flex: 1, padding: 10 }}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        paddingHorizontal: 10,
+        paddingTop: topPadding + 10,
+      }}
+    >
       <TouchableWithoutFeedback onPress={closeMenu}>
         <View style={{ flex: 1 }}>
           {orders.length === 0 ? (
@@ -91,7 +101,7 @@ const OrderHistoryScreen: React.FC = () => {
                   onCloseMenu={closeMenu}
                 />
               )}
-              contentContainerStyle={{ paddingBottom: bottomTabOverflow }}
+              contentContainerStyle={{ paddingBottom: bottomTabOverflow + bottomPadding + 10 }}
               refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }

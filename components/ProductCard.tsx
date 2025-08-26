@@ -4,7 +4,7 @@ import { useCartStore } from "@/store";
 import { Colors } from "@/utils/constants/Colors";
 import { Image } from "expo-image";
 import React from "react";
-import { Animated, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Animated, Modal, Pressable, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 
 type Props = {
   item: any;
@@ -27,6 +27,16 @@ const ProductCard = ({
 }: Props) => {
   const { isInCart, getItemQuantity } = useCartStore();
   const scheme = useColorScheme() ?? "light";
+  const [infoVisible, setInfoVisible] = React.useState(false);
+  const minusScale = React.useRef(new Animated.Value(1)).current;
+  const plusScale = React.useRef(new Animated.Value(1)).current;
+  const qtyScale = React.useRef(new Animated.Value(1)).current;
+
+  const formatPrice = (value: number) => {
+    if (value === null || value === undefined) return '0';
+    const rounded = Math.round((value + Number.EPSILON) * 100) / 100;
+    return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+  };
 
   return (
     <View
@@ -53,18 +63,26 @@ const ProductCard = ({
         )}
       </View>
 
-      <Image source={item.image} style={styles.image} />
+      <TouchableWithoutFeedback onPress={() => setInfoVisible(true)}>
+        <Image source={item.image} style={styles.image} />
+      </TouchableWithoutFeedback>
 
       <View style={styles.productInfo}>
-        <ThemedText style={[styles.title, { color: Colors[scheme].text }]}>
-          {item.title}
-        </ThemedText>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => setInfoVisible(true)}>
+          <ThemedText
+            style={[styles.title, { color: Colors[scheme].text }]}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
+            {item.title}
+          </ThemedText>
+        </TouchableOpacity>
 
         <View style={styles.priceContainer}>
-          <ThemedText style={styles.price}>{item.price} с</ThemedText>
+          <ThemedText style={styles.price}>{formatPrice(item.price)} с</ThemedText>
           {item.originalPrice && (
             <ThemedText style={styles.originalPrice}>
-              {item.originalPrice} с
+              {formatPrice(item.originalPrice)} с
             </ThemedText>
           )}
         </View>
@@ -86,36 +104,97 @@ const ProductCard = ({
               ]}
             >
               <TouchableOpacity
-                onPress={() => decreaseQty(item.id)}
+                onPress={() => {
+                  Animated.sequence([
+                    Animated.timing(minusScale, { toValue: 0.9, duration: 70, useNativeDriver: true }),
+                    Animated.spring(minusScale, { toValue: 1, useNativeDriver: true })
+                  ]).start();
+                  Animated.sequence([
+                    Animated.timing(qtyScale, { toValue: 1.08, duration: 80, useNativeDriver: true }),
+                    Animated.spring(qtyScale, { toValue: 1, useNativeDriver: true })
+                  ]).start();
+                  decreaseQty(item.id);
+                }}
                 style={styles.qtyBtnContainer}
               >
-                <ThemedText style={styles.qtyBtn}>-</ThemedText>
+                <Animated.View style={{ transform: [{ scale: minusScale }] }}>
+                  <ThemedText style={styles.qtyBtn}>-</ThemedText>
+                </Animated.View>
               </TouchableOpacity>
-              <ThemedText style={styles.qtyCount}>
-                {getItemQuantity(item.id)}
-              </ThemedText>
+              <Animated.View style={{ flex: 1, transform: [{ scale: qtyScale }] }}>
+                <ThemedText style={styles.qtyCount}>
+                  {getItemQuantity(item.id)}
+                </ThemedText>
+              </Animated.View>
               <TouchableOpacity
-                onPress={() => increaseQty(item.id)}
+                onPress={() => {
+                  Animated.sequence([
+                    Animated.timing(plusScale, { toValue: 0.9, duration: 70, useNativeDriver: true }),
+                    Animated.spring(plusScale, { toValue: 1, useNativeDriver: true })
+                  ]).start();
+                  Animated.sequence([
+                    Animated.timing(qtyScale, { toValue: 1.08, duration: 80, useNativeDriver: true }),
+                    Animated.spring(qtyScale, { toValue: 1, useNativeDriver: true })
+                  ]).start();
+                  increaseQty(item.id);
+                }}
                 style={styles.qtyBtnContainer}
               >
-                <ThemedText style={styles.qtyBtn}>+</ThemedText>
+                <Animated.View style={{ transform: [{ scale: plusScale }] }}>
+                  <ThemedText style={styles.qtyBtn}>+</ThemedText>
+                </Animated.View>
               </TouchableOpacity>
             </View>
           ) : (
             <TouchableOpacity
               style={styles.addBtn}
-              onPress={() => addToCart(item)}
+              onPress={() => {
+                Animated.sequence([
+                  Animated.timing(plusScale, { toValue: 0.9, duration: 70, useNativeDriver: true }),
+                  Animated.spring(plusScale, { toValue: 1, useNativeDriver: true })
+                ]).start();
+                addToCart(item);
+              }}
             >
-              <ThemedText style={styles.addBtnText}>+</ThemedText>
+              <Animated.View style={{ transform: [{ scale: plusScale }] }}>
+                <ThemedText style={styles.addBtnText}>+</ThemedText>
+              </Animated.View>
             </TouchableOpacity>
           )}
         </Animated.View>
       </View>
+
+      <Modal
+        visible={infoVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setInfoVisible(false)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setInfoVisible(false)}>
+          <Pressable style={[styles.modalCard, { backgroundColor: isDark ? '#1f2937' : '#FFFFFF' }]} onPress={(e) => e.stopPropagation()}>
+            <ThemedText style={[styles.modalTitle, { color: Colors[scheme].text }]}>{item.title}</ThemedText>
+            {item.inpackage && item.inpackage > 1 ? (
+              <ThemedText style={styles.modalText}>В упаковке {item.inpackage} шт</ThemedText>
+            ) : (
+              <ThemedText style={styles.modalText}>Товар продается поштучно</ThemedText>
+            )}
+            <TouchableOpacity style={styles.modalButton} onPress={() => setInfoVisible(false)}>
+              <ThemedText style={styles.modalButtonText}>Понятно</ThemedText>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 };
 
-export default ProductCard;
+export default React.memo(ProductCard, (prev, next) => {
+  return (
+    prev.item?.id === next.item?.id &&
+    prev.isDark === next.isDark &&
+    prev.CARD_WIDTH === next.CARD_WIDTH
+  );
+});
 
 const styles = StyleSheet.create({
   card: {
@@ -156,12 +235,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 8,
   },
-  productInfo: { marginBottom: 12 },
+  productInfo: { marginBottom: 12, minHeight: 56 },
   title: {
     fontSize: 13,
     fontWeight: "600",
     marginBottom: 8,
     lineHeight: 16,
+    height: 32,
   },
   priceContainer: { flexDirection: "row", alignItems: "center" },
   price: {
@@ -207,4 +287,40 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
   addBtnText: { color: "#fff", fontSize: 20, fontWeight: "600" },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 420,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  modalText: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 16,
+  },
+  modalButton: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#000000',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  modalButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
 });

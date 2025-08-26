@@ -9,9 +9,10 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: async (data: IAuthFormData) => {
-      const response = await axiosApi.post<IUser>('/login', data, {
+      const response = await axiosApi.post<IUser>('/auth/login', data, {
         withCredentials: true,
       });
+      console.log(response.data)
       return response.data;
     },
     onSuccess: (user) => {

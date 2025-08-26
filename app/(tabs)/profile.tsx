@@ -24,21 +24,11 @@ export default function ProfileScreen() {
 
   const {user} = useAuthStore()
 
-  // const [user] = useState({
-  //   name: "Алиса Иванова",
-  //   email: "alisa.ivanova@gmail.com",
-  //   phone: "+996 555 123 456",
-  //   orders: 24,
-  //   level: "Gold Member",
-  // });
-
   
 
   const [menuItems] = useState([
     { icon: "person", label: "Личные данные", action: "personal_info", badge: null, color: "#4a90e2" },
     { icon: "bag", label: "Мои заказы", action: "orders", badge: "3", color: "#27ae60" },
-    { icon: "heart", label: "Избранное", action: "favorites", badge: "12", color: "#e74c3c" },
-    { icon: "card", label: "Способы оплаты", action: "payment", badge: null, color: "#f39c12" },
     { icon: "location", label: "Адреса доставки", action: "addresses", badge: null, color: "#9b59b6" },
     { icon: "notifications", label: "Уведомления", action: "notifications", badge: null, color: "#16a085" },
     { icon: "help-circle", label: "Поддержка", action: "support", badge: null, color: "#34495e" },

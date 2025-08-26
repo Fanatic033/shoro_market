@@ -44,13 +44,11 @@ export default function LoginScreen() {
         /> */}
       </View>
 
-      {/* Карточка */}
       <KeyboardAvoidingView style={styles.card}>
         <ThemedText style={styles.subtext}>
           С возвращением — введите свои данные, чтобы продолжить
         </ThemedText>
 
-        {/* Телефон */}
         <ThemedText style={styles.label}>Имя пользователя</ThemedText>
         <TextInput
   style={styles.input}
@@ -81,7 +79,6 @@ export default function LoginScreen() {
 </View>
 
 
-        {/* Кнопка */}
         <Pressable style={styles.button} onPress={onSubmit} disabled={isPending}>
           {isPending ? (
             <ActivityIndicator color="#fff" />
@@ -90,14 +87,12 @@ export default function LoginScreen() {
           )}
         </Pressable>
 
-        {/* Ошибка */}
         {error && (
           <ThemedText style={{ color: "red", textAlign: "center", marginTop: 8 }}>
             Ошибка входа, проверьте данные
           </ThemedText>
         )}
 
-        {/* Ссылка */}
         <ThemedText style={styles.link}>
           Нет аккаунта?{" "}
           <Link href="/(auth)/register" style={styles.linkText}>

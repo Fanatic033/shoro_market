@@ -1,15 +1,16 @@
 import CategoryList from "@/components/Category/CategoryList";
 import OrderCard from "@/components/Order/OrderCard";
 import ProductCard from "@/components/ProductCard";
+import { ProductSkeletonCard } from "@/components/ui/Skeleton";
 import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
+import { ThemedText } from "@/components/ui/ThemedText";
 import { Widget } from "@/components/ui/Widget";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useSafeArea } from "@/hooks/useSafeArea";
 import { useCartStore, useProductStore } from "@/store";
 import { Colors } from "@/utils/constants/Colors";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
-import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -24,12 +25,11 @@ import {
 } from "react-native";
 
 const HomeScreen = () => {
-  const router = useRouter();
   const safeArea = useSafeArea();
-  const { selectedCategory, setSelectedCategory, categories, getFilteredProducts } =
+  const { selectedCategory, setSelectedCategory, categories, getFilteredProducts, loadRemoteProducts, error, isLoading } =
     useProductStore();
 
-  const { addItem, getItemQuantity, isInCart, updateQuantity, removeItem, items } =
+  const { addItem, getItemQuantity, updateQuantity, removeItem, items } =
     useCartStore();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -43,45 +43,49 @@ const HomeScreen = () => {
 
   const scheme = useColorScheme() ?? "light";
   const isDark = scheme === "dark";
+  useEffect(() => {
+    loadRemoteProducts();
+  }, [loadRemoteProducts]);
+
 
   // const { orders } = useOrderStore();
-  const orders = [
-    {
-      id: "#1245",
-      status: "delivered" as const,
-      createdAt: new Date(),
-      total: 850,
-      deliveryAddress: "ул. Ленина, 1",
-      customerName: "Иван Иванов",
-      customerPhone: "+996 555 123 456",
-      items: [
-        { id: 1, title: "Бургер", quantity: 2, price: 250, image: null },
-        { id: 2, title: "Кола", quantity: 1, price: 100, image: null },
-        { id: 3, title: "Фри", quantity: 1, price: 250, image: null },
-      ],
-    },
-    {
-      id: "#1244",
-      status: "preparing" as const,
-      createdAt: new Date(Date.now() - 1000 * 60 * 60),
-      total: 450,
-      deliveryAddress: "ул. Пушкина, 10",
-      customerName: "Петр Петров",
-      customerPhone: "+996 555 654 321",
-      items: [
-        { id: 4, title: "Пицца Маргарита", quantity: 1, price: 450, image: null },
-      ],
-    },
-  ];
+  const lastTwoOrders = useMemo(() => {
+    const orders = [
+      {
+        id: "#1245",
+        status: "delivered" as const,
+        createdAt: new Date(),
+        total: 850,
+        deliveryAddress: "ул. Ленина, 1",
+        customerName: "Иван Иванов",
+        customerPhone: "+996 555 123 456",
+        items: [
+          { id: 1, title: "Бургер", quantity: 2, price: 250, image: null },
+          { id: 2, title: "Кола", quantity: 1, price: 100, image: null },
+          { id: 3, title: "Фри", quantity: 1, price: 250, image: null },
+        ],
+      },
+      {
+        id: "#1244",
+        status: "preparing" as const,
+        createdAt: new Date(Date.now() - 1000 * 60 * 60),
+        total: 450,
+        deliveryAddress: "ул. Пушкина, 10",
+        customerName: "Петр Петров",
+        customerPhone: "+996 555 654 321",
+        items: [
+          { id: 4, title: "Пицца Маргарита", quantity: 1, price: 450, image: null },
+        ],
+      },
+    ];
 
-  const lastTwoOrders = React.useMemo(() => {
     const sorted = orders
       .sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
     return [sorted[0] || null, sorted[1] || null];
-  }, [orders]);
+  }, []);
 
   // --- адаптивная сетка ---
   const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -194,6 +198,25 @@ const HomeScreen = () => {
 
   const bottomTabOverflow = useBottomTabOverflow();
 
+  // --- Анимация списка продуктов при смене категории ---
+  const listOpacity = useRef(new Animated.Value(1)).current;
+  const listTranslate = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // плавная анимация при смене категории
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(listOpacity, { toValue: 0, duration: 120, useNativeDriver: true }),
+        Animated.timing(listTranslate, { toValue: 8, duration: 120, useNativeDriver: true })
+      ]),
+      Animated.parallel([
+        Animated.timing(listOpacity, { toValue: 1, duration: 180, useNativeDriver: true }),
+        Animated.timing(listTranslate, { toValue: 0, duration: 180, useNativeDriver: true })
+      ])
+    ]).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory]);
+
   return (
     <>
       <StatusBar 
@@ -213,9 +236,10 @@ const HomeScreen = () => {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ alignItems: "center" }}
+          stickyHeaderIndices={[2]}
         >
+          {/* Widgets */}
           <View style={styles.contentWrapper}>
-            {/* Widgets */}
             <FlatList
               data={widgets}
               renderItem={Widget}
@@ -224,43 +248,72 @@ const HomeScreen = () => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.widgetsContainer}
             />
+          </View>
 
-            <View style={styles.ordersRow}>
-              <OrderCard order={lastTwoOrders[0]} index={0} />
-              <OrderCard order={lastTwoOrders[1]} index={1} />
-            </View>
+          <View style={[styles.contentWrapper, styles.ordersRow]}>
+            <OrderCard order={lastTwoOrders[0]} index={0} />
+            <OrderCard order={lastTwoOrders[1]} index={1} />
+          </View>
 
-            {/* Categories */}
+          {/* Sticky Categories */}
+          <View style={[styles.contentWrapper, styles.stickyHeader]}>
             <CategoryList
               categories={categories}
               selectedCategory={selectedCategory}
               onSelect={setSelectedCategory}
             />
-
-            {/* Products Grid */}
-            <FlatList
-              data={getFilteredProducts()}
-              keyExtractor={(item) => item.id.toString()}
-              numColumns={numColumns}
-              renderItem={({ item }) => (
-                <ProductCard
-                  item={item}
-                  isDark={isDark}
-                  getControlWidth={getControlWidth}
-                  addToCart={addToCart}
-                  increaseQty={increaseQty}
-                  decreaseQty={decreaseQty}
-                  CARD_WIDTH={CARD_WIDTH}
-                />
-              )}
-              scrollEnabled={false}
-              columnWrapperStyle={{ justifyContent: "center", gap: GUTTER }}
-              contentContainerStyle={{
-                paddingBottom: bottomTabOverflow,
-                paddingHorizontal: OUTER_HORIZONTAL_PADDING / 2,
-              }}
-            />
           </View>
+
+          {/* Products Grid */}
+          <Animated.View style={[styles.contentWrapper, { opacity: listOpacity, transform: [{ translateY: listTranslate }] }]}>
+            {error ? (
+              <ThemedText style={{ paddingHorizontal: 16, color: 'red' }}>{error}</ThemedText>
+            ) : null}
+            {isLoading ? (
+              <FlatList
+                data={Array.from({ length: numColumns * 2 })}
+                keyExtractor={(_, i) => `sk-${i}`}
+                numColumns={numColumns}
+                renderItem={() => (
+                  <ProductSkeletonCard width={CARD_WIDTH} />
+                )}
+                scrollEnabled={false}
+                columnWrapperStyle={{ justifyContent: "center", gap: GUTTER }}
+                contentContainerStyle={{
+                  paddingBottom: bottomTabOverflow,
+                  paddingHorizontal: OUTER_HORIZONTAL_PADDING / 2,
+                }}
+              />
+            ) : (
+              <FlatList
+                data={getFilteredProducts()}
+                keyExtractor={(item) => item.id.toString()}
+                numColumns={numColumns}
+                renderItem={({ item }) => (
+                  <ProductCard
+                    item={item}
+                    isDark={isDark}
+                    getControlWidth={getControlWidth}
+                    addToCart={addToCart}
+                    increaseQty={increaseQty}
+                    decreaseQty={decreaseQty}
+                    CARD_WIDTH={CARD_WIDTH}
+                  />
+                )}
+                ListEmptyComponent={!isLoading ? (
+                  <View style={{ padding: 24 }}>
+                    <ThemedText>Товары не найдены</ThemedText>
+                  </View>
+                ) : null}
+                scrollEnabled={false}
+                columnWrapperStyle={{ justifyContent: "center", gap: GUTTER }}
+                contentContainerStyle={{
+                  paddingBottom: bottomTabOverflow,
+                  paddingHorizontal: OUTER_HORIZONTAL_PADDING / 2,
+                }}
+              />
+            )}
+          </Animated.View>
         </ScrollView>
       </SafeAreaView>
     </>
@@ -297,5 +350,11 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 10,
     marginBottom: 16,
+  },
+
+  stickyHeader: {
+    backgroundColor: "transparent",
+    zIndex: 10,
+    elevation: 4,
   },
 });

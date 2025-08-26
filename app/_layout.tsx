@@ -11,6 +11,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import ToastManager from "toastify-react-native/components/ToastManager"
 
+export const unstable_settings = { initialRouteName: "(auth)" }
+
 void SplashScreen.preventAutoHideAsync()
 
 const queryClient = new QueryClient()

@@ -1,12 +1,13 @@
 import { ThemedText } from "@/components/ui/ThemedText";
-import { Order } from "@/store";
+import { Order, useCartStore } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from 'expo-haptics';
 import { useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 type OrderStatus = Order["status"];
-type OrderItem = Order["items"][0];
+// type OrderItem = Order["items"][0];
 
 const getStatusColor = (status: OrderStatus) => {
   switch (status) {
@@ -37,6 +38,7 @@ type Props = {
 const OrderCard: React.FC<Props> = ({ order, isMenuOpen, onToggleMenu, onCloseMenu }) => {
   const colors = getStatusColor(order.status);
   const router = useRouter();
+  const addItemsFromOrder = useCartStore((s) => s.addItemsFromOrder);
 
   return (
     <View style={styles.card}>
@@ -71,7 +73,11 @@ const OrderCard: React.FC<Props> = ({ order, isMenuOpen, onToggleMenu, onCloseMe
                 style={styles.dropdownItem}
                 onPress={() => {
                   onCloseMenu();
-                  // Логика повторного заказа
+                  addItemsFromOrder(order.items);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                  setTimeout(() => {
+                    router.push('/(tabs)/cart');
+                  }, Platform.select({ ios: 120, android: 120, default: 120 }));
                 }}
               >
                 <Ionicons name="refresh" size={16} color="#111827" />
