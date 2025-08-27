@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     height: 40,
-    paddingHorizontal: 4,
+    paddingHorizontal: 5,
     justifyContent: "space-between",
   },
   qtyBtnContainer: {
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   qtyBtn: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-  qtyCount: { fontSize: 16, fontWeight: "600", textAlign: "center", flex: 1 },
+  qtyCount: { fontSize: 18, fontWeight: "700", textAlign: "center", },
   addBtn: {
     width: 40,
     height: 40,

@@ -1,14 +1,14 @@
 import { useAuthStore } from '@/store/authStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { SERVER_URL } from './constants/constant';
 
-const API_BASE_URL =  SERVER_URL // для разработки
+const API_BASE_URL: string = (Constants.expoConfig?.extra as any)?.apiBaseUrl || 'https://crmdev.shoro.kg/api';
 
 const axiosApi = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 5000,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },

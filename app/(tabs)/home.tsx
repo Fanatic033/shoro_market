@@ -9,6 +9,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { useSafeArea } from "@/hooks/useSafeArea";
 import { useCartStore, useProductStore } from "@/store";
 import { Colors } from "@/utils/constants/Colors";
+import { Ionicons } from "@expo/vector-icons";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -21,6 +22,7 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
+  TouchableOpacity,
   View
 } from "react-native";
 
@@ -202,6 +204,17 @@ const HomeScreen = () => {
   const listOpacity = useRef(new Animated.Value(1)).current;
   const listTranslate = useRef(new Animated.Value(0)).current;
 
+  // --- Scroll to top button logic ---
+  const scrollRef = useRef<ScrollView | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const handleScroll = useCallback((event: any) => {
+    const offsetY = event?.nativeEvent?.contentOffset?.y ?? 0;
+    setShowScrollTop(offsetY > 300);
+  }, []);
+  const scrollToTop = useCallback(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  }, []);
+
   useEffect(() => {
     // плавная анимация при смене категории
     Animated.sequence([
@@ -233,9 +246,12 @@ const HomeScreen = () => {
         }
       ]}>
         <ScrollView
+          ref={scrollRef}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ alignItems: "center" }}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
           stickyHeaderIndices={[2]}
         >
           {/* Widgets */}
@@ -315,6 +331,27 @@ const HomeScreen = () => {
             )}
           </Animated.View>
         </ScrollView>
+        {showScrollTop ? (
+          <TouchableOpacity
+            onPress={scrollToTop}
+            activeOpacity={0.85}
+            style={{
+              position: "absolute",
+              right: 16,
+              bottom: 16 + bottomTabOverflow,
+              backgroundColor: Colors[scheme].card,
+              borderRadius: 24,
+              padding: 12,
+              elevation: 6,
+              shadowColor: "#000000",
+              shadowOffset: { width: 0, height: 3 },
+              shadowOpacity: 0.2,
+              shadowRadius: 6,
+            }}
+          >
+            <Ionicons name="arrow-up" size={22} color={Colors[scheme].text} />
+          </TouchableOpacity>
+        ) : null}
       </SafeAreaView>
     </>
   );

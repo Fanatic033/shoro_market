@@ -1,5 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { CartItem } from './cartStore';
 
 export interface Order {
@@ -70,6 +71,7 @@ export const useOrderStore = create<OrderState>()(
     }),
     {
       name: 'order-store',
+      storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({ orders: state.orders }),
     }
   )

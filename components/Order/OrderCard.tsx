@@ -55,7 +55,7 @@ const OrderCard: React.FC<Props> = ({ order, index, }) => {
             { color: isDark ? "#9CA3AF" : "#6B7280" },
           ]}
         >
-          Нет заказов
+          Нет заказа
         </ThemedText>
       </View>
     );
