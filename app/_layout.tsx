@@ -15,7 +15,7 @@ export const unstable_settings = { initialRouteName: "(auth)" }
 
 void SplashScreen.preventAutoHideAsync()
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient() 
 
 
 

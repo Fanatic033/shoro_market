@@ -1,7 +1,6 @@
 import CartBadge from "@/components/Cart/CartBadge";
-import { useAuthStore } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
-import { Redirect, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import { Platform, View } from "react-native";
 import { HapticTab } from "../../components/ui/HapticTab";
 import TabBarBackground from "../../components/ui/TabBarBackground";
@@ -10,13 +9,6 @@ import { Colors } from "../../utils/constants/Colors";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-
-  const { user, } = useAuthStore();
-
-
-  if (!user) {
-    return <Redirect href="/(auth)/login" />;
-  }
 
   return (
     <Tabs

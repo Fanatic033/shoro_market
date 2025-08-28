@@ -103,7 +103,7 @@ const CartScreen: React.FC = () => {
         <View style={styles.container}>
           {cartItems.length === 0 ? (
             <View style={styles.empty}>
-              <Ionicons name="card" size={80} color="#aaa" />
+              <Ionicons name="card" size={80} color="#9e1b32" />
               <ThemedText style={styles.emptyTitle}>Ваша корзина пуста</ThemedText>
               <ThemedText style={styles.emptyText}>Добавьте товары, чтобы совершить покупку</ThemedText>
             </View>
@@ -137,8 +137,8 @@ const CartScreen: React.FC = () => {
                       </ThemedText>
                     </View>
 
-                    <TouchableOpacity style={styles.checkoutBtn} onPress={handleCheckout}>
-                      <ThemedText style={styles.checkoutText}>Оформить заказ</ThemedText>
+                    <TouchableOpacity style={[styles.checkoutBtn, { backgroundColor: adaptiveColor("#000","#DC143C") }]} onPress={handleCheckout}>
+                      <ThemedText style={[styles.checkoutText]}>Оформить заказ</ThemedText>
                     </TouchableOpacity>
                   </View>
                 }
@@ -289,7 +289,7 @@ const CartScreen: React.FC = () => {
                   },
                 ]}
               >
-                <TouchableOpacity style={styles.submitButton} onPress={handleSubmitOrder}>
+                <TouchableOpacity style={[styles.submitButton, { backgroundColor: adaptiveColor("#000","#DC143C") }]} onPress={handleSubmitOrder}>
                   <ThemedText style={styles.submitButtonText}>Подтвердить заказ</ThemedText>
                 </TouchableOpacity>
               </View>
@@ -307,11 +307,11 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 20, fontWeight: "bold", marginTop: 12 },
   emptyText: { color: "#666", marginTop: 4, textAlign: "center" },
   clearBtn: { flexDirection: "row", alignItems: "center", padding: 12, justifyContent: "flex-end" },
-  clearText: { marginLeft: 6 },
+  clearText: { marginLeft: 6, color: "#9e1b32" },
   summary: { padding: 16, borderTopWidth: 1, borderTopColor: "#eee" },
   summaryRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
   totalText: { fontSize: 18, fontWeight: "700" },
-  checkoutBtn: { backgroundColor: "#2c3e50", padding: 14, borderRadius: 8, marginTop: 12 },
+  checkoutBtn: { backgroundColor: "#000000", padding: 14, borderRadius: 8, marginTop: 12 },
   checkoutText: { color: "white", textAlign: "center", fontSize: 16, fontWeight: "600" },
 
   // Стили для модалки
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   },
   modalFooter: { padding: 16, borderTopWidth: 1 },
   submitButton: {
-    backgroundColor: "#2c3e50",
+    backgroundColor: "#000000",
     padding: 16,
     borderRadius: 8,
     alignItems: "center",

@@ -6,6 +6,7 @@ import { Image } from "expo-image";
 import React from "react";
 import { Animated, Modal, Pressable, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 
+
 type Props = {
   item: any;
   isDark: boolean;
@@ -64,7 +65,7 @@ const ProductCard = ({
       </View>
 
       <TouchableWithoutFeedback onPress={() => setInfoVisible(true)}>
-        <Image source={item.image} style={styles.image} />
+        <Image source={item.image} style={styles.image} transition={300}/>
       </TouchableWithoutFeedback>
 
       <View style={styles.productInfo}>
