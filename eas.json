@@ -15,7 +15,9 @@
         "distribution": "internal",
         "env": {
           "API_BASE_URL": "https://crmdev.shoro.kg/api"
-        }
+        },
+        "autoIncrement": true,
+        "channel": "preview"
       },
       "production": {
         "autoIncrement": true,
