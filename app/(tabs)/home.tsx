@@ -5,31 +5,41 @@ import { ProductSkeletonCard } from "@/components/ui/Skeleton";
 import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { Widget } from "@/components/ui/Widget";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { useSafeArea } from "@/hooks/useSafeArea";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import { useCartStore, useProductStore } from "@/store";
-import { Colors } from "@/utils/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Animated,
   Dimensions,
   Easing,
   FlatList,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const HomeScreen = () => {
-  const safeArea = useSafeArea();
-  const { selectedCategory, setSelectedCategory, categories, getFilteredProducts, loadRemoteProducts, error, isLoading } =
-    useProductStore();
+  const {
+    selectedCategory,
+    setSelectedCategory,
+    categories,
+    getFilteredProducts,
+    loadRemoteProducts,
+    error,
+    isLoading,
+  } = useProductStore();
 
   const { addItem, getItemQuantity, updateQuantity, removeItem, items } =
     useCartStore();
@@ -43,12 +53,10 @@ const HomeScreen = () => {
     }, 800);
   }, []);
 
-  const scheme = useColorScheme() ?? "light";
-  const isDark = scheme === "dark";
+  const { colorScheme, isDark, colors } = useAppTheme();
   useEffect(() => {
     loadRemoteProducts();
   }, [loadRemoteProducts]);
-
 
   // const { orders } = useOrderStore();
   const lastTwoOrders = useMemo(() => {
@@ -76,22 +84,27 @@ const HomeScreen = () => {
         customerName: "Петр Петров",
         customerPhone: "+996 555 654 321",
         items: [
-          { id: 4, title: "Пицца Маргарита", quantity: 1, price: 450, image: null },
+          {
+            id: 4,
+            title: "Пицца Маргарита",
+            quantity: 1,
+            price: 450,
+            image: null,
+          },
         ],
       },
     ];
 
-    const sorted = orders
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+    const sorted = orders.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
     return [sorted[0] || null, sorted[1] || null];
   }, []);
 
   // --- адаптивная сетка ---
   const SCREEN_WIDTH = Dimensions.get("window").width;
-  
+
   let numColumns = 2;
   if (SCREEN_WIDTH >= 1200) {
     numColumns = 4; // desktop
@@ -110,8 +123,10 @@ const HomeScreen = () => {
   const CONTROL_MIN_WIDTH = 40;
   const CONTROL_MAX_WIDTH = CARD_WIDTH - 20;
 
-  const controlWidthsRef = React.useRef<{ [key: number]: Animated.Value }>({}).current;
-  
+  const controlWidthsRef = React.useRef<{ [key: number]: Animated.Value }>(
+    {}
+  ).current;
+
   const getControlWidth = (id: number) => {
     if (!controlWidthsRef[id]) {
       controlWidthsRef[id] = new Animated.Value(CONTROL_MIN_WIDTH);
@@ -121,10 +136,10 @@ const HomeScreen = () => {
 
   // ИСПРАВЛЕНИЕ: Следим за изменениями корзины и сбрасываем анимации
   useEffect(() => {
-    const currentProductIds = new Set(items.map(item => item.id));
-    
+    const currentProductIds = new Set(items.map((item) => item.id));
+
     // Для всех продуктов, которые не в корзине, сбрасываем анимацию
-    Object.keys(controlWidthsRef).forEach(idStr => {
+    Object.keys(controlWidthsRef).forEach((idStr) => {
       const id = parseInt(idStr);
       if (!currentProductIds.has(id)) {
         controlWidthsRef[id].setValue(CONTROL_MIN_WIDTH);
@@ -219,35 +234,55 @@ const HomeScreen = () => {
     // плавная анимация при смене категории
     Animated.sequence([
       Animated.parallel([
-        Animated.timing(listOpacity, { toValue: 0, duration: 120, useNativeDriver: true }),
-        Animated.timing(listTranslate, { toValue: 8, duration: 120, useNativeDriver: true })
+        Animated.timing(listOpacity, {
+          toValue: 0,
+          duration: 120,
+          useNativeDriver: true,
+        }),
+        Animated.timing(listTranslate, {
+          toValue: 8,
+          duration: 120,
+          useNativeDriver: true,
+        }),
       ]),
       Animated.parallel([
-        Animated.timing(listOpacity, { toValue: 1, duration: 180, useNativeDriver: true }),
-        Animated.timing(listTranslate, { toValue: 0, duration: 180, useNativeDriver: true })
-      ])
+        Animated.timing(listOpacity, {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+        Animated.timing(listTranslate, {
+          toValue: 0,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+      ]),
     ]).start();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory]);
 
   return (
     <>
-      <StatusBar 
-        barStyle={scheme === "dark" ? "light-content" : "dark-content"}
-        backgroundColor={Colors[scheme].background}
+      <StatusBar
+        barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
+        backgroundColor={colors.background}
         translucent={false}
       />
-      <SafeAreaView style={[
-        styles.container, 
-        { 
-          backgroundColor: Colors[scheme].background,
-          paddingTop: safeArea.getTopPadding(),
-          paddingBottom: safeArea.getBottomPadding()
-        }
-      ]}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          {
+            backgroundColor: colors.background,
+            // paddingTop: safeArea.getTopPadding(),
+            // paddingBottom: safeArea.getBottomPadding()
+          },
+        ]}
+      >
         <ScrollView
           ref={scrollRef}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ alignItems: "center" }}
           onScroll={handleScroll}
@@ -281,18 +316,26 @@ const HomeScreen = () => {
           </View>
 
           {/* Products Grid */}
-          <Animated.View style={[styles.contentWrapper, { opacity: listOpacity, transform: [{ translateY: listTranslate }] }]}>
+          <Animated.View
+            style={[
+              styles.contentWrapper,
+              {
+                opacity: listOpacity,
+                transform: [{ translateY: listTranslate }],
+              },
+            ]}
+          >
             {error ? (
-              <ThemedText style={{ paddingHorizontal: 16, color: 'red' }}>{error}</ThemedText>
+              <ThemedText style={{ paddingHorizontal: 16, color: "red", display: 'none' }}>
+                {error}
+              </ThemedText>
             ) : null}
             {isLoading ? (
               <FlatList
                 data={Array.from({ length: numColumns * 2 })}
                 keyExtractor={(_, i) => `sk-${i}`}
                 numColumns={numColumns}
-                renderItem={() => (
-                  <ProductSkeletonCard width={CARD_WIDTH} />
-                )}
+                renderItem={() => <ProductSkeletonCard width={CARD_WIDTH} />}
                 scrollEnabled={false}
                 columnWrapperStyle={{ justifyContent: "center", gap: GUTTER }}
                 contentContainerStyle={{
@@ -316,11 +359,26 @@ const HomeScreen = () => {
                     CARD_WIDTH={CARD_WIDTH}
                   />
                 )}
-                ListEmptyComponent={!isLoading ? (
-                  <View style={{ padding: 24 }}>
-                    <ThemedText>Товары не найдены</ThemedText>
-                  </View>
-                ) : null}
+                ListEmptyComponent={
+                  !isLoading ? (
+                    <View style={styles.emptyStateContainer}>
+                      <View style={styles.emptyStateIconContainer}>
+                        <Ionicons 
+                          name="sad-outline" 
+                          size={64} 
+                          color={colors.text} 
+                          style={{ opacity: 0.6 }}
+                        />
+                      </View>
+                      <ThemedText style={styles.emptyStateTitle}>
+                        Товары не найдены
+                      </ThemedText>
+                      <ThemedText style={styles.emptyStateSubtitle}>
+                        Попробуйте обновить список Товаров
+                      </ThemedText>
+                    </View>
+                  ) : null
+                }
                 scrollEnabled={false}
                 columnWrapperStyle={{ justifyContent: "center", gap: GUTTER }}
                 contentContainerStyle={{
@@ -339,7 +397,7 @@ const HomeScreen = () => {
               position: "absolute",
               right: 16,
               bottom: 16 + bottomTabOverflow,
-              backgroundColor: Colors[scheme].card,
+              backgroundColor: colors.card,
               borderRadius: 24,
               padding: 12,
               elevation: 6,
@@ -349,7 +407,7 @@ const HomeScreen = () => {
               shadowRadius: 6,
             }}
           >
-            <Ionicons name="arrow-up" size={22} color={Colors[scheme].text} />
+            <Ionicons name="arrow-up" size={22} color={colors.text} />
           </TouchableOpacity>
         ) : null}
       </SafeAreaView>
@@ -393,5 +451,24 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     zIndex: 10,
     elevation: 4,
+  },
+  emptyStateContainer: {
+    alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  emptyStateIconContainer: {
+    marginBottom: 15,
+  },
+  emptyStateTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  emptyStateSubtitle: {
+    fontSize: 14,
+    opacity: 0.7,
+    textAlign: "center",
   },
 });

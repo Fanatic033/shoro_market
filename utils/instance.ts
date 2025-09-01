@@ -1,10 +1,11 @@
-import { useAuthStore } from '@/store/authStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import Constants from 'expo-constants';
-import { router } from 'expo-router';
 
-const API_BASE_URL: string = (Constants.expoConfig?.extra as any)?.apiBaseUrl || 'https://crmdev.shoro.kg/api';
+// const API_BASE_URL: string = (Constants.expoConfig?.extra as any)?.apiBaseUrl || 'https://crmdev.shoro.kg/api';
+
+const API_BASE_URL: string = 'http://10.10.100.70:8080/api'
+
+
 
 const axiosApi = axios.create({
   baseURL: API_BASE_URL,
@@ -20,7 +21,7 @@ axiosApi.interceptors.request.use(
       const raw = await AsyncStorage.getItem('auth-storage');
       if (raw) {
         const parsed = JSON.parse(raw);
-        const token = parsed?.state?.user?.jwtToken;
+        const token = parsed?.state?.user?.accessToken;
         if (token) {
           const headers: any = config.headers || {};
           // Axios v1 may use AxiosHeaders; setting via object works when casting
@@ -45,26 +46,41 @@ axiosApi.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Глобальная обработка ошибок
-    if (error.response?.status === 401) {
-      // Пользователь не авторизован
-      try {
-        // Сбрасываем состояние авторизации и уводим на логин
-        useAuthStore.getState().logout();
-      } catch (e) { 
-        console.error(e)
-       }
-      try {
-        router.replace('/login');
-      } catch (e) { 
-        console.error(e)
-       }
-      
-    } else if (error.response?.status === 500) {
-      // Серверная ошибка
-      console.error('Server error:', error.response.data);
+    // Attempt token refresh on 401
+    const originalRequest = error.config;
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      return (async () => {
+        const raw = await AsyncStorage.getItem('auth-storage');
+        if (!raw) throw error;
+        const parsed = JSON.parse(raw);
+        const refreshToken = parsed?.state?.user?.refreshToken;
+        if (!refreshToken) throw error;
+
+        try {
+          const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+          const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshResponse.data || {};
+
+          if (!newAccessToken) throw error;
+
+          // Update storage manually to persist tokens
+          parsed.state.user = {
+            ...(parsed.state.user || {}),
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken || refreshToken,
+          };
+          await AsyncStorage.setItem('auth-storage', JSON.stringify(parsed));
+
+          // Retry original request with new access token
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          return axiosApi(originalRequest);
+        } catch {
+          // If refresh fails, propagate error
+          throw error;
+        }
+      })();
     }
-    
     return Promise.reject(error);
   }
 );

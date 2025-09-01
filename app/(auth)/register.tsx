@@ -1,15 +1,17 @@
 import { ThemedText } from "@/components/ui/ThemedText";
+import { useSafeArea } from "@/hooks/useSafeArea";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
+  Platform,
   Pressable,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function RegisterScreen() {
@@ -20,180 +22,288 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const safeArea = useSafeArea();
+
   const onSubmit = () => {
     if (!phone || !password || password !== confirm) return;
     router.replace("/(tabs)/home");
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <KeyboardAvoidingView style={styles.card}>
-        <ThemedText style={styles.subtext}>
-          Создайте аккаунт — это займет меньше минуты
-        </ThemedText>
+    <SafeAreaView style={[styles.container, { paddingTop: safeArea.getTopPadding() }]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+      >
+      <ScrollView>
+        <View style={styles.content}>
+          <View style={styles.centerContent}>
+            {/* Логотип и заголовок */}
+            <View style={styles.logoSection}>
+            </View>
 
-        <ThemedText style={styles.label}>Имя</ThemedText>
-        <TextInput
-          style={styles.input}
-          placeholder="Иван Петров"
-          keyboardType="default"
-          autoCapitalize="none"
-          value={name}
-          onChangeText={setName}
-          placeholderTextColor={"gray"}
-        />
+            {/* Карточка с формой */}
+            <View style={styles.card}>
+              <ThemedText style={styles.cardTitle}>
+                Создать аккаунт
+              </ThemedText>
 
-        <ThemedText style={styles.label}>Телефон</ThemedText>
-        <TextInput
-          style={styles.input}
-          placeholder="0700123456"
-          keyboardType="phone-pad"
-          autoCapitalize="none"
-          value={phone}
-          onChangeText={setPhone}
-          placeholderTextColor={"gray"}
-        />
+              <View style={styles.inputContainer}>
+                <ThemedText style={styles.label}>Имя</ThemedText>
+                <View style={styles.inputWrapper}>
+                  <Ionicons name="person-outline" size={20} color="#6B7280" />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Иван Петров"
+                    autoCapitalize="words"
+                    value={name}
+                    onChangeText={setName}
+                    placeholderTextColor="#9CA3AF"
+                  />
+                </View>
+              </View>
 
-        <ThemedText style={styles.label}>Пароль</ThemedText>
-        <View style={styles.passwordWrapper}>
-          <TextInput
-            style={styles.inputPassword}
-            placeholder="Введите пароль"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-            placeholderTextColor="gray"
-          />
-          <Pressable
-            onPress={() => setShowPassword(!showPassword)}
-            style={styles.iconWrapper}
-          >
-            <Ionicons
-              name={showPassword ? "eye-off" : "eye"}
-              size={22}
-              color="#777"
-            />
-          </Pressable>
+              <View style={styles.inputContainer}>
+                <ThemedText style={styles.label}>Телефон</ThemedText>
+                <View style={styles.inputWrapper}>
+                  <Ionicons name="call-outline" size={20} color="#6B7280" />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="0700123456"
+                    keyboardType="phone-pad"
+                    autoCapitalize="none"
+                    value={phone}
+                    onChangeText={setPhone}
+                    placeholderTextColor="#9CA3AF"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <ThemedText style={styles.label}>Пароль</ThemedText>
+                <View style={styles.inputWrapper}>
+                  <Ionicons name="lock-closed-outline" size={20} color="#6B7280" />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Введите пароль"
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholderTextColor="#9CA3AF"
+                  />
+                  <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                    <Ionicons
+                      name={showPassword ? "eye-off" : "eye"}
+                      size={20}
+                      color="#6B7280"
+                    />
+                  </Pressable>
+                </View>
+                <ThemedText style={styles.helperText}>Минимум 8 символов</ThemedText>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <ThemedText style={styles.label}>Повторите пароль</ThemedText>
+                <View style={styles.inputWrapper}>
+                  <Ionicons name="shield-checkmark-outline" size={20} color="#6B7280" />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Повторите пароль"
+                    secureTextEntry={!showConfirm}
+                    value={confirm}
+                    onChangeText={setConfirm}
+                    placeholderTextColor="#9CA3AF"
+                  />
+                  <Pressable onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeIcon}>
+                    <Ionicons
+                      name={showConfirm ? "eye-off" : "eye"}
+                      size={20}
+                      color="#6B7280"
+                    />
+                  </Pressable>
+                </View>
+              </View>
+
+              <Pressable style={styles.button} onPress={onSubmit}>
+                <View style={styles.buttonContent}>
+                  <Ionicons name="person-add-outline" size={20} color="white" />
+                  <ThemedText style={styles.buttonText}>Создать аккаунт</ThemedText>
+                </View>
+              </Pressable>
+
+              <ThemedText style={styles.termsText}>
+                Создавая аккаунт, вы соглашаетесь с нашими Условиями использования и Политикой конфиденциальности
+              </ThemedText>
+
+              <View style={styles.linkContainer}>
+                <ThemedText style={styles.linkText}>Уже есть аккаунт?</ThemedText>
+                <Link href="/(auth)/login" style={styles.link}>
+                  Войти
+                </Link>
+              </View>
+            </View>
+
+            <View style={styles.footer}>
+            
+            </View>
+          </View>
         </View>
-
-        <ThemedText style={styles.label}>Повторите пароль</ThemedText>
-        <View style={styles.passwordWrapper}>
-          <TextInput
-            style={styles.inputPassword}
-            placeholder="Повторите пароль"
-            secureTextEntry={!showConfirm}
-            value={confirm}
-            onChangeText={setConfirm}
-            placeholderTextColor="gray"
-          />
-          <Pressable
-            onPress={() => setShowConfirm(!showConfirm)}
-            style={styles.iconWrapper}
-          >
-            <Ionicons
-              name={showConfirm ? "eye-off" : "eye"}
-              size={22}
-              color="#777"
-            />
-          </Pressable>
-        </View>
-        
-
-        {/* Кнопка */}
-        <TouchableOpacity style={styles.button} onPress={onSubmit}>
-          <ThemedText style={styles.buttonText}>Создать аккаунт</ThemedText>
-        </TouchableOpacity>
-
-        <ThemedText style={styles.link}>
-          Уже есть аккаунт?{" "}
-          <Link href="/(auth)/login" style={styles.linkText}>
-            Войти
-          </Link>
-        </ThemedText>
+      </ScrollView>
       </KeyboardAvoidingView>
-    </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: "#e53935",
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: 12,
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  logoSection: {
     alignItems: "center",
-    padding: 20,
-    paddingTop: 60,
+    marginBottom: 32,
+  },
+  logoContainer: {
+    width: 80,
+    height: 80,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: "rgba(255,255,255,0.9)",
+    textAlign: "center",
+    lineHeight: 24,
   },
   card: {
-    width: "100%",
-    maxWidth: 420,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 40,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
     elevation: 5,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.05)",
   },
-  subtext: {
-    fontSize: 13,
-    color: "#546e7a",
+  cardTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#111827",
+    marginBottom: 24,
     textAlign: "center",
+  },
+  inputContainer: {
     marginBottom: 16,
   },
   label: {
     fontSize: 14,
     fontWeight: "500",
-    marginBottom: 4,
-    marginTop: 8,
-    color: "#000",
-  },
-  input: {
-    backgroundColor: "#fafafa",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 48,
-    borderWidth: 1,
-    borderColor: "#ddd",
-  },
-  passwordWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    backgroundColor: "#fafafa",
-    height: 48,
-    paddingHorizontal: 8,
+    color: "#374151",
     marginBottom: 8,
   },
-  inputPassword: {
-    flex: 1,
-    height: "100%",
-    fontSize: 15,
-    color: "#000",
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F9FAFB",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
-  iconWrapper: {
-    padding: 6,
+  input: {
+    flex: 1,
+    marginLeft: 12,
+    color: "#111827",
+    fontSize: 16,
+  },
+  eyeIcon: {
+    padding: 4,
+  },
+  helperText: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginTop: 4,
   },
   button: {
     backgroundColor: "#e53935",
     borderRadius: 12,
-    height: 48,
+    paddingVertical: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginTop: 8,
+  },
+  buttonContent: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 16,
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "800",
-    fontSize: 16,
+    color: "white",
+    fontWeight: "600",
+    fontSize: 18,
+    marginLeft: 8,
   },
-  link: {
-    fontSize: 14,
+  termsText: {
+    fontSize: 12,
+    color: "#6B7280",
     textAlign: "center",
-    marginTop: 12,
-    color: "#000",
+    marginTop: 16,
+    lineHeight: 16,
+  },
+  linkContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 16,
+    gap: 4,
   },
   linkText: {
+    fontSize: 14,
+    color: "#6B7280",
+  },
+  link: {
     color: "#e53935",
-    fontWeight: "700",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  footer: {
+    paddingBottom: 24,
+  },
+  footerText: {
+    textAlign: "center",
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 14,
   },
 });

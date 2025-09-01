@@ -1,6 +1,6 @@
 
 import { useBottomTabOverflow } from "@/components/ui/TabBarBackground"
-import { useColorScheme } from "@/hooks/useColorScheme"
+import { useAppTheme } from "@/hooks/useAppTheme"
 import { useAuthStore } from "@/store/authStore"
 import { Ionicons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
@@ -10,8 +10,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 export default function ProfileScreen() {
   const router = useRouter()
   const { logout } = useAuthStore()
-  const scheme = useColorScheme() ?? "light"
-  const isDark = scheme === "dark"
+  const { isDark, adaptiveColor } = useAppTheme()
 
   const { user } = useAuthStore()
 
@@ -37,14 +36,14 @@ export default function ProfileScreen() {
   const bottomTabOverflow = useBottomTabOverflow()
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? "#111827" : "#ffffff" }]}>
+    <View style={[styles.container, { backgroundColor: adaptiveColor("#ffffff", "#111827") }]}>
       <ScrollView
-        style={[styles.scrollContent, { backgroundColor: isDark ? "#111827" : "#ffffff" }]}
+        style={[styles.scrollContent, { backgroundColor: adaptiveColor("#ffffff", "#111827") }]}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: bottomTabOverflow + 20, paddingTop: 60 }}
       >
         <View style={styles.userCard}>
-          <View style={[styles.userCardContent, { backgroundColor: isDark ? "#1f2937" : "#f8fafc" }]}>
+          <View style={[styles.userCardContent, { backgroundColor: adaptiveColor("#f8fafc", "#1f2937") }]}>
             <View style={styles.avatarContainer}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>{user?.username?.charAt(0).toUpperCase() || "U"}</Text>
@@ -52,7 +51,7 @@ export default function ProfileScreen() {
             </View>
 
             <View style={styles.userDetails}>
-              <Text style={[styles.userName, { color: isDark ? "#f9fafb" : "#374151" }]}>{user?.username}</Text>
+              <Text style={[styles.userName, { color: adaptiveColor("#374151", "#f9fafb") }]}>{user?.username}</Text>
               <Text style={[styles.userRole, { color: "#6b7280" }]}>{user?.role}</Text>
 
               <View style={styles.userMeta}>
@@ -70,13 +69,13 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.menuSection}>
-          <Text style={[styles.sectionTitle, { color: isDark ? "#f9fafb" : "#374151" }]}>Меню</Text>
+          <Text style={[styles.sectionTitle, { color: adaptiveColor("#374151", "#f9fafb") }]}>Меню</Text>
 
           <View style={styles.menuList}>
             {menuItems.map((item, index) => (
               <TouchableOpacity
                 key={index}
-                style={[styles.menuItem, { backgroundColor: isDark ? "#1f2937" : "#f8fafc" }]}
+                style={[styles.menuItem, { backgroundColor: adaptiveColor("#f8fafc", "#1f2937") }]}
                 onPress={() => handleMenuClick(item.action)}
                 activeOpacity={0.7}
               >
@@ -86,7 +85,7 @@ export default function ProfileScreen() {
                   </View>
 
                   <View style={styles.menuTextContainer}>
-                    <Text style={[styles.menuLabel, { color: isDark ? "#f9fafb" : "#374151" }]}>{item.label}</Text>
+                    <Text style={[styles.menuLabel, { color: adaptiveColor("#374151", "#f9fafb") }]}>{item.label}</Text>
                   </View>
 
                   <View style={styles.menuRight}>

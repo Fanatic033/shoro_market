@@ -15,7 +15,7 @@ export enum EnumAsyncStorage {
 }
 
 export interface ITokens {
-	jwtToken: string;
+	accessToken: string;
 	refreshToken: string;
 }
 

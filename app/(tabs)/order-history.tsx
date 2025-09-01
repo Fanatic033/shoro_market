@@ -1,6 +1,7 @@
 import OrderCard from "@/components/Order/OrderDetail";
 import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
 import { ThemedText } from "@/components/ui/ThemedText";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import { useSafeArea } from "@/hooks/useSafeArea";
 import { Order } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,11 +9,11 @@ import React, { useCallback, useState } from "react";
 import {
   FlatList,
   RefreshControl,
-  SafeAreaView,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const initialOrders: Order[] = [
   {
@@ -55,9 +56,9 @@ const OrderHistoryScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [menuOpenOrderId, setMenuOpenOrderId] = useState<string | null>(null);
   const bottomTabOverflow = useBottomTabOverflow();
-  const { getTopPadding, getBottomPadding } = useSafeArea();
-  const topPadding = getTopPadding();
+  const { getBottomPadding } = useSafeArea();
   const bottomPadding = getBottomPadding();
+  const { colors } = useAppTheme();
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -74,14 +75,15 @@ const OrderHistoryScreen: React.FC = () => {
       style={{
         flex: 1,
         paddingHorizontal: 10,
-        paddingTop: topPadding + 10,
+        backgroundColor: colors.background,
+        // paddingTop: topPadding,
       }}
     >
       <TouchableWithoutFeedback onPress={closeMenu}>
         <View style={{ flex: 1 }}>
           {orders.length === 0 ? (
             <View style={styles.empty}>
-              <Ionicons name="time-outline" size={80} color="#aaa" />
+              <Ionicons name="time-outline" size={80}  color={colors.text}   style={{ opacity: 0.6 }} />
               <ThemedText style={styles.emptyTitle}>Заказов пока нет</ThemedText>
               <ThemedText style={styles.emptyText}>
                 Вы ещё не совершали покупки

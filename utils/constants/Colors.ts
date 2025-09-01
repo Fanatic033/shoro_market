@@ -39,4 +39,4 @@ export const Colors = {
     border: "#374151",
     card: "#1F2937",
   },
-} as const
+} as const;

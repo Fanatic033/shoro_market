@@ -1,10 +1,7 @@
-"use client"
-
 import CartItem from "@/components/Cart/CartItem"
 import { useBottomTabOverflow } from "@/components/ui/TabBarBackground"
 import { ThemedText } from "@/components/ui/ThemedText"
-import { useSafeArea } from "@/hooks/useSafeArea"
-import { useTheme } from "@/hooks/useTheme"
+import { useAppTheme } from "@/hooks/useAppTheme"
 import { useCartStore, useOrderStore } from "@/store"
 import { Ionicons } from "@expo/vector-icons"
 import type React from "react"
@@ -13,19 +10,18 @@ import {
   Alert,
   FlatList,
   Modal,
-  SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { Toast } from "toastify-react-native"
 
 const CartScreen: React.FC = () => {
-  const {  colors, adaptiveColor } = useTheme()
-  const safeArea = useSafeArea()
+  const { colors, adaptiveColor } = useAppTheme();
+
 
   const { items: cartItems, subtotal, deliveryCost, total, updateQuantity, removeItem, clearCart } = useCartStore()
 
@@ -86,24 +82,20 @@ const CartScreen: React.FC = () => {
 
   return (
     <>
-      <StatusBar 
-        barStyle={adaptiveColor("dark-content", "light-content") as "dark-content" | "light-content"}
-        backgroundColor={colors.background}
-        translucent={false}
-      />
       <SafeAreaView
         style={{ 
           flex: 1, 
           padding: 10, 
-          paddingTop: 10 + safeArea.getTopPadding(),
-          paddingBottom: 10 + bottomTabOverflow + safeArea.getBottomPadding(), 
+          // paddingTop: 10 + safeArea.getTopPadding(),
+          // paddingBottom: 10 + bottomTabOverflow + safeArea.getBottomPadding(), 
           backgroundColor: colors.background 
         }}
       >
         <View style={styles.container}>
           {cartItems.length === 0 ? (
             <View style={styles.empty}>
-              <Ionicons name="card" size={80} color="#9e1b32" />
+              <Ionicons name="card" size={80}  color={colors.text} 
+                          style={{ opacity: 0.6 }} />
               <ThemedText style={styles.emptyTitle}>Ваша корзина пуста</ThemedText>
               <ThemedText style={styles.emptyText}>Добавьте товары, чтобы совершить покупку</ThemedText>
             </View>

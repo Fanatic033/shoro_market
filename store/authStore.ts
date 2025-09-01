@@ -19,7 +19,7 @@ export const useAuthStore = create<AuthState>()(
       updateTokens: (tokens) =>
         set((state) => ({
           user: state.user
-            ? { ...state.user, jwtToken: tokens.accessToken, refreshToken: tokens.refreshToken }
+            ? { ...state.user, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken }
             : null,
         })),
       logout: () => set({ user: null }),
