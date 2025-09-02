@@ -145,10 +145,15 @@ export default OrderCard;
 
 const styles = StyleSheet.create({
   card: {
+    marginTop: 2,
     backgroundColor: "#fff",
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
+     shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
     elevation: 2,
   },
   cardHeader: {

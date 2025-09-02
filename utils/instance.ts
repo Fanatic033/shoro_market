@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // const API_BASE_URL: string = (Constants.expoConfig?.extra as any)?.apiBaseUrl || 'https://crmdev.shoro.kg/api';
 
-const API_BASE_URL: string = 'http://10.10.100.70:8080/api'
+const API_BASE_URL: string = 'http://192.168.8.207:8080/api'
 
 
 

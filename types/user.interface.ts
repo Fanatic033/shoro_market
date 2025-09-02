@@ -1,8 +1,8 @@
 export interface IUser {
 	id?: number;
-	username?: string;
-	role?: string;
+	name: string;
+	email: string
 	accessToken: string;
 	refreshToken: string;
-	phone?: string;
+	phoneNumber?: string;
 }

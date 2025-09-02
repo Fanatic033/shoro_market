@@ -1,18 +1,10 @@
+import { Product } from '@/services/products';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export interface CartItem {
-  id: number;
-  title: string;
-  price: number;
-  originalPrice?: number;
-  image: any;
+export interface CartItem extends Omit<Product, 'inStock'> {
   quantity: number;
-  isNew?: boolean;
-  isHit?: boolean;
-  discount?: number;
-  inpackage?: number | null;
 }
 
 interface CartState {
@@ -23,7 +15,7 @@ interface CartState {
   total: number;
   
   // Actions
-  addItem: (item: Omit<CartItem, 'quantity'>) => void;
+  addItem: (item: Product) => void;
   removeItem: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
   clearCart: () => void;
@@ -104,8 +96,7 @@ export const useCartStore = create<CartState>()(
         const state = get();
         const totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
         const subtotal = state.items.reduce((sum, item) => {
-          const packSize = item.inpackage && item.inpackage > 1 ? item.inpackage : 1;
-          return sum + (item.price * packSize * item.quantity);
+          return sum + (item.price * item.quantity);
         }, 0);
         const deliveryCost = subtotal > 50000 ? 0 : 500; // Бесплатная доставка от 50000 сом
         const total = subtotal + deliveryCost;
@@ -148,9 +139,9 @@ export const useCartStore = create<CartState>()(
                 originalPrice: orderItem.originalPrice,
                 image,
                 isNew: orderItem.isNew,
-                isHit: orderItem.isHit,
                 discount: orderItem.discount,
-                inpackage: orderItem.inpackage,
+                category: orderItem.category,
+                url: orderItem.url,
                 quantity: orderItem.quantity,
               });
             }

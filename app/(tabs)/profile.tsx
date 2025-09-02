@@ -1,18 +1,41 @@
-
 import { useBottomTabOverflow } from "@/components/ui/TabBarBackground"
 import { useAppTheme } from "@/hooks/useAppTheme"
+import { useProfile } from "@/services/useProfile"
 import { useAuthStore } from "@/store/authStore"
 import { Ionicons } from "@expo/vector-icons"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useRouter } from "expo-router"
 import { useState } from "react"
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import Animated, {
+  Extrapolate,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated"
 
 export default function ProfileScreen() {
   const router = useRouter()
   const { logout } = useAuthStore()
   const { isDark, adaptiveColor } = useAppTheme()
+  const { user, loading } = useProfile()
 
-  const { user } = useAuthStore()
+  const scrollY = useSharedValue(0)
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y
+    },
+  })
+
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(scrollY.value, [0, 100, 150], [0, 0, 1], Extrapolate.CLAMP)
+
+    return {
+      opacity,
+    }
+  })
 
   const [menuItems] = useState([
     { icon: "person-outline", label: "Личные данные", action: "personal_info", badge: null, color: "#DC143C" },
@@ -31,38 +54,58 @@ export default function ProfileScreen() {
     logout()
     router.replace("/(auth)/login")
     console.log("Выход из аккаунта")
+    AsyncStorage.clear()
   }
 
   const bottomTabOverflow = useBottomTabOverflow()
 
   return (
     <View style={[styles.container, { backgroundColor: adaptiveColor("#ffffff", "#111827") }]}>
-      <ScrollView
+      <Animated.View
+        style={[
+          styles.animatedHeader,
+          {
+            backgroundColor: adaptiveColor("#e5e7eb", "#111827"),
+            borderBottomColor: adaptiveColor("#e5e7eb", "#fff"),
+          },
+          headerAnimatedStyle,
+        ]}
+      >
+        <View style={styles.headerContent}>
+          <Text style={[styles.headerName, { color: adaptiveColor("#374151", "#f9fafb") }]}>
+            {user?.name || "Пользователь"}
+          </Text>
+        </View>
+      </Animated.View>
+
+      <Animated.ScrollView
         style={[styles.scrollContent, { backgroundColor: adaptiveColor("#ffffff", "#111827") }]}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: bottomTabOverflow + 20, paddingTop: 60 }}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
       >
         <View style={styles.userCard}>
           <View style={[styles.userCardContent, { backgroundColor: adaptiveColor("#f8fafc", "#1f2937") }]}>
             <View style={styles.avatarContainer}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{user?.username?.charAt(0).toUpperCase() || "U"}</Text>
+                <Text style={styles.avatarText}>{user?.name?.charAt(0).toUpperCase() || "U"}</Text>
               </View>
             </View>
 
             <View style={styles.userDetails}>
-              <Text style={[styles.userName, { color: adaptiveColor("#374151", "#f9fafb") }]}>{user?.username}</Text>
-              <Text style={[styles.userRole, { color: "#6b7280" }]}>{user?.role}</Text>
+              <Text style={[styles.userName, { color: adaptiveColor("#374151", "#f9fafb") }]}>{user?.name}</Text>
 
               <View style={styles.userMeta}>
+              <View style={styles.metaItem}>
+                  <Ionicons name="mail-outline" size={14} color="#6b7280" />
+                  <Text style={[styles.metaText, { color: "#6b7280" }]}>{user?.email}</Text>
+                </View>
                 <View style={styles.metaItem}>
                   <Ionicons name="call-outline" size={14} color="#6b7280" />
-                  <Text style={[styles.metaText, { color: "#6b7280" }]}>{user?.phone || "Не указан"}</Text>
+                  <Text style={[styles.metaText, { color: "#6b7280" }]}>{user?.phoneNumber || "Не указан"}</Text>
                 </View>
-                <View style={styles.metaItem}>
-                  <Ionicons name="person-outline" size={14} color="#6b7280" />
-                  <Text style={[styles.metaText, { color: "#6b7280" }]}>ID: {user?.id}</Text>
-                </View>
+               
               </View>
             </View>
           </View>
@@ -114,7 +157,7 @@ export default function ProfileScreen() {
         <View style={styles.footer}>
           <Text style={[styles.footerText, { color: "#6b7280" }]}>Версия приложения 1.0.0</Text>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   )
 }
@@ -122,6 +165,37 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+
+  animatedHeader: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 100,
+    zIndex: 1000,
+    borderBottomWidth: 1,
+    paddingTop: 50,
+    paddingHorizontal: 20,
+  },
+  headerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    gap: 12,
+  },
+  headerEmail: {
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+  },
+  headerEmailText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#ffffff",
+  },
+  headerName: {
+    fontSize: 22,
+    fontWeight: "600",
   },
 
   scrollContent: {
@@ -139,7 +213,7 @@ const styles = StyleSheet.create({
     padding: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 3,
   },
@@ -187,7 +261,7 @@ const styles = StyleSheet.create({
   metaItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 8,
   },
   metaText: {
     fontSize: 14,

@@ -1,17 +1,17 @@
 import { ThemedText } from "@/components/ui/ThemedText";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { Product } from "@/services/products";
 import { useCartStore } from "@/store";
 import { Colors } from "@/utils/constants/Colors";
 import { Image } from "expo-image";
 import React from "react";
 import { Animated, Modal, Pressable, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 
-
 type Props = {
-  item: any;
+  item: Product;
   isDark: boolean;
   getControlWidth: (id: number) => Animated.Value;
-  addToCart: (product: any) => void;
+  addToCart: (product: Product) => void;
   increaseQty: (id: number) => void;
   decreaseQty: (id: number) => void;
   CARD_WIDTH: number;
@@ -174,11 +174,7 @@ const ProductCard = ({
         <Pressable style={styles.modalBackdrop} onPress={() => setInfoVisible(false)}>
           <Pressable style={[styles.modalCard, { backgroundColor: isDark ? '#1f2937' : '#FFFFFF' }]} onPress={(e) => e.stopPropagation()}>
             <ThemedText style={[styles.modalTitle, { color: Colors[scheme].text }]}>{item.title}</ThemedText>
-            {item.inpackage && item.inpackage > 1 ? (
-              <ThemedText style={styles.modalText}>В упаковке {item.inpackage} шт</ThemedText>
-            ) : (
-              <ThemedText style={styles.modalText}>Товар продается поштучно</ThemedText>
-            )}
+            <ThemedText style={styles.modalText}>Товар продается поштучно</ThemedText>
             <TouchableOpacity style={styles.modalButton} onPress={() => setInfoVisible(false)}>
               <ThemedText style={styles.modalButtonText}>Понятно</ThemedText>
             </TouchableOpacity>

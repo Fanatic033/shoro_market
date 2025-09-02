@@ -66,13 +66,13 @@ const HomeScreen = () => {
         status: "delivered" as const,
         createdAt: new Date(),
         total: 850,
-        deliveryAddress: "ул. Ленина, 1",
+        deliveryAddress: "ул. Ленина, 1", 
         customerName: "Иван Иванов",
         customerPhone: "+996 555 123 456",
         items: [
-          { id: 1, title: "Бургер", quantity: 2, price: 250, image: null },
-          { id: 2, title: "Кола", quantity: 1, price: 100, image: null },
-          { id: 3, title: "Фри", quantity: 1, price: 250, image: null },
+          { id: 1, title: "Бургер", quantity: 2, price: 250, image: null, category: "Напитки" },
+          { id: 2, title: "Кола", quantity: 1, price: 100, image: null, category: "Стаканы" },
+          { id: 3, title: "Фри", quantity: 1, price: 250, image: null, category: "fast-food" },
         ],
       },
       {
@@ -90,6 +90,7 @@ const HomeScreen = () => {
             quantity: 1,
             price: 450,
             image: null,
+            category: "pizza",
           },
         ],
       },
@@ -102,17 +103,10 @@ const HomeScreen = () => {
     return [sorted[0] || null, sorted[1] || null];
   }, []);
 
-  // --- адаптивная сетка ---
   const SCREEN_WIDTH = Dimensions.get("window").width;
 
   let numColumns = 2;
-  if (SCREEN_WIDTH >= 1200) {
-    numColumns = 4; // desktop
-  } else if (SCREEN_WIDTH >= 768) {
-    numColumns = 3; // tablet
-  } else {
-    numColumns = 2; // mobile
-  }
+  
 
   const OUTER_HORIZONTAL_PADDING = 32;
   const GUTTER = 16;
@@ -231,7 +225,6 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    // плавная анимация при смене категории
     Animated.sequence([
       Animated.parallel([
         Animated.timing(listOpacity, {
@@ -273,8 +266,6 @@ const HomeScreen = () => {
           styles.container,
           {
             backgroundColor: colors.background,
-            // paddingTop: safeArea.getTopPadding(),
-            // paddingBottom: safeArea.getBottomPadding()
           },
         ]}
       >

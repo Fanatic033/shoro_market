@@ -1,20 +1,6 @@
+import { Product } from '@/services/products';
 import { Ionicons } from '@expo/vector-icons';
 import { create } from 'zustand';
-
-export interface Product {
-  id: number;
-  title: string;
-  price: number;
-  originalPrice?: number;
-  image: any;
-  isNew?: boolean;
-  isHit?: boolean;
-  discount?: number;
-  category: string;
-  description?: string;
-  inStock: boolean;
-  inpackage?: number | null;
-}
 
 export interface Category {
   id: string;
@@ -66,19 +52,11 @@ export const useProductStore = create<ProductState>((set, get) => ({
   loadRemoteProducts: async () => {
     try {
       set({ isLoading: true, error: null });
-      const { loadAndMergeProducts } = await import('../services/products');
-      const merged = await loadAndMergeProducts();
-      // Map merged to Product type
-      const products = merged.map(m => ({
-        id: m.id,
-        title: m.title,
-        price: m.price,
-        image: m.image,
-        category: m.category,
-        inStock: m.inStock,
-        inpackage: m.inpackage,
-      }));
-      // Build categories from product categories
+
+      const { loadProducts } = await import('../services/products');
+      const products = await loadProducts();
+      
+      // Создаем категории на основе продуктов
       const categoryNames = Array.from(new Set(products.map(p => p.category))).filter(Boolean);
       const mapIcon = (name: string): keyof typeof Ionicons.glyphMap => {
         const lower = name.toLowerCase();
@@ -127,8 +105,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
     // Фильтр по поиску
     if (searchQuery.trim()) {
       filtered = filtered.filter(p => 
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        p.title.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     

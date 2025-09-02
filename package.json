@@ -30,7 +30,9 @@
     "expo-status-bar": "~2.2.3",
     "expo-symbols": "~0.4.5",
     "expo-system-ui": "~5.0.10",
+    "expo-updates": "~0.28.17",
     "expo-web-browser": "~14.2.0",
+    "jwt-decode": "^4.0.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
@@ -41,8 +43,7 @@
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
     "toastify-react-native": "^7.2.3",
-    "zustand": "^5.0.8",
-    "expo-updates": "~0.28.17"
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

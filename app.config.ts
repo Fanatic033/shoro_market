@@ -1,7 +1,7 @@
 import type { ExpoConfig } from 'expo/config';
 
 // const API_BASE_URL = process.env.API_BASE_URL ?? 'https://crmdev.shoro.kg/api';
-const API_BASE_URL: string = 'http://10.10.100.70:8080/api'
+const API_BASE_URL: string = 'http://192.168.8.207:8080/api'
 
 
 const config: ExpoConfig = {

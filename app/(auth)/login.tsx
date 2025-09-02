@@ -27,7 +27,6 @@ export default function LoginScreen() {
         {
           onSuccess: (auth) => {
             const user: IUser = auth as unknown as IUser;
-            console.log(user)
             setUser(user);
             Toast.success("Вы успешно вошли в аккаунт!", "bottom")
             router.navigate("/(tabs)/home");
@@ -51,12 +50,12 @@ export default function LoginScreen() {
             {/* Карточка с формой */}
             <View style={styles.card}>
               <ThemedText style={styles.cardTitle}>
-                Вход в систему
+                Войти в аккаунт
               </ThemedText>
 
               <View style={styles.inputContainer}>
                 <ThemedText style={styles.label}>Имя пользователя</ThemedText>
-                <View style={styles.inputWrapper}>
+                <View style={[styles.inputWrapper, error && styles.inputWrapperError]}>
                   <Ionicons name="person-outline" size={20} color="#6B7280" />
                   <TextInput
                     style={styles.input}
@@ -72,7 +71,7 @@ export default function LoginScreen() {
 
               <View style={styles.inputContainer}>
                 <ThemedText style={styles.label}>Пароль</ThemedText>
-                <View style={styles.inputWrapper}>
+                <View style={[styles.inputWrapper, error && styles.inputWrapperError]}>
                   <Ionicons name="lock-closed-outline" size={20} color="#6B7280" />
                   <TextInput
                     style={styles.input}
@@ -198,6 +197,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
+  inputWrapperError: {
+    borderColor: "#DC2626",
+    borderWidth: 2,
+  },
   input: {
     flex: 1,
     marginLeft: 12,
@@ -256,7 +259,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
   },
   link: {
-    color: "#e53935",
+    color: "#e5393",
     fontWeight: "600",
     fontSize: 14,
   },

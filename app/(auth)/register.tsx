@@ -126,7 +126,6 @@ export default function RegisterScreen() {
 
               <Pressable style={styles.button} onPress={onSubmit}>
                 <View style={styles.buttonContent}>
-                  <Ionicons name="person-add-outline" size={20} color="white" />
                   <ThemedText style={styles.buttonText}>Создать аккаунт</ThemedText>
                 </View>
               </Pressable>
@@ -294,7 +293,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
   },
   link: {
-    color: "#e53935",
+    color: "#e5393",
     fontWeight: "600",
     fontSize: 14,
   },

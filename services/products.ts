@@ -1,49 +1,54 @@
 import axiosApi from '@/utils/instance';
 
-export type RawCatalogProduct = {
-  guid: string;
-  name: string;
-  value: number | null;
-  weight: number | null;
-  inpackage: number | null;
-  productCategory: string;
-};
-
-export type RawPriceItem = {
-  id: number;
-  name: string;
+export type ProductResponse = {
+  url: string | null;
+  productId: number;
+  productName: string;
   price: number;
+  category:string
 };
 
-export type PriceListResponse = {
-  client: { id: number; name: string };
-  products: RawPriceItem[];
-};
-
-export type MergedProduct = {
-  id: number; // use price list id for cart stability
+export type Product = {
+  id: number;
   title: string;
   price: number;
-  guid?: string;
-  category: string;
   image: any;
+  category: string;
   inStock: boolean;
-  inpackage?: number | null;
+  url?: string | null;
+  isNew?: boolean;
+  discount?: number;
+  originalPrice?: number;
 };
 
-const PRODUCTS_URL = 'https://crmdev.shoro.kg/api/product/forNurs';
-const PRICES_URL = 'https://crmdev.shoro.kg/api/pricelist/findByClient?clientId=4808';
 
-export async function fetchCatalog(): Promise<RawCatalogProduct[]> {
-  const { data } = await axiosApi.get<RawCatalogProduct[]>(PRODUCTS_URL, { withCredentials: true });
+export async function fetchProducts(): Promise<ProductResponse[]> {
+  const { data } = await axiosApi.get<ProductResponse[]>('/products');
   return data || [];
 }
 
-export async function fetchPriceList(): Promise<PriceListResponse> {
-  const { data } = await axiosApi.get<PriceListResponse>(PRICES_URL, { withCredentials: true });
-  return data;
+// Функция для преобразования ответа API в формат приложения
+export async function loadProducts(): Promise<Product[]> {
+  const products = await fetchProducts();
+  
+  return products.map(product => {
+    const image = product.url 
+      ? { uri: `http://192.168.8.207:8080${product.url}` }
+      : pickLocalImageByName(product.productName);
+    
+    return {
+      id: product.productId,
+      title: product.productName,
+      price: product.price,
+      category: product.category,
+      image,
+      inStock: true,
+      url: product.url,
+    };
+  });
 }
 
+// Функция для выбора локального изображения по названию продукта
 function pickLocalImageByName(name: string) {
   const lower = name.toLowerCase();
   try {
@@ -56,31 +61,3 @@ function pickLocalImageByName(name: string) {
     return null;
   }
 }
-
-export async function loadAndMergeProducts(): Promise<MergedProduct[]> {
-  const [catalog, priceList] = await Promise.all([fetchCatalog(), fetchPriceList()]);
-
-  const nameToCatalog = new Map<string, RawCatalogProduct>();
-  catalog.forEach(p => nameToCatalog.set(p.name.trim(), p));
-
-  const merged: MergedProduct[] = priceList.products.map(p => {
-    const match = nameToCatalog.get(p.name.trim());
-    const image = pickLocalImageByName(p.name);
-    const inpackage = match?.inpackage ?? null;
-    // Keep price as unit price; cart will account for package size
-    return {
-      id: p.id,
-      title: p.name,
-      price: p.price,
-      guid: match?.guid,
-      category: match?.productCategory || 'popular',
-      image,
-      inStock: true,
-      inpackage,
-    };
-  });
-
-  return merged;
-}
-
-
