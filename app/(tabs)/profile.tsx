@@ -1,12 +1,11 @@
 import { useBottomTabOverflow } from "@/components/ui/TabBarBackground"
 import { useAppTheme } from "@/hooks/useAppTheme"
 import { useProfile } from "@/services/useProfile"
-import { useAuthStore } from "@/store/authStore"
+import { useAuthStore } from "@/store"
 import { Ionicons } from "@expo/vector-icons"
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useRouter } from "expo-router"
 import { useState } from "react"
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import Animated, {
   Extrapolate,
   interpolate,
@@ -17,9 +16,10 @@ import Animated, {
 
 export default function ProfileScreen() {
   const router = useRouter()
+  const { user, loading } = useProfile()
   const { logout } = useAuthStore()
   const { isDark, adaptiveColor } = useAppTheme()
-  const { user, loading } = useProfile()
+  const [logoutLoading, setLogoutLoading] = useState(false)
 
   const scrollY = useSharedValue(0)
 
@@ -49,12 +49,16 @@ export default function ProfileScreen() {
   const handleMenuClick = (action: string) => {
     console.log("Нажато:", action)
   }
-
-  const handleLogout = () => {
-    logout()
-    router.replace("/(auth)/login")
-    console.log("Выход из аккаунта")
-    AsyncStorage.clear()
+  const handleLogout = async () => {
+    try {
+      setLogoutLoading(true)
+      await logout()
+      router.replace("/(auth)/login")
+    } catch (e) {
+      console.error("Ошибка выхода:", e)
+    } finally {
+      setLogoutLoading(false)
+    }
   }
 
   const bottomTabOverflow = useBottomTabOverflow()
@@ -71,7 +75,7 @@ export default function ProfileScreen() {
           headerAnimatedStyle,
         ]}
       >
-        <View style={styles.headerContent}>
+        <View style={styles.headerContent}> 
           <Text style={[styles.headerName, { color: adaptiveColor("#374151", "#f9fafb") }]}>
             {user?.name || "Пользователь"}
           </Text>
@@ -146,13 +150,24 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.logoutSection}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.8}>
-            <View style={styles.logoutContent}>
-              <Ionicons name="log-out-outline" size={20} color="#dc2626" />
-              <Text style={styles.logoutText}>Выйти из аккаунта</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={[styles.logoutButton, logoutLoading && { opacity: 0.6 }]}
+          onPress={handleLogout}
+          activeOpacity={0.8}
+          disabled={logoutLoading}
+        >
+          <View style={styles.logoutContent}>
+            {logoutLoading ? (
+              <ActivityIndicator size="small" color="#dc2626" />
+            ) : (
+              <>
+                <Ionicons name="log-out-outline" size={20} color="#dc2626" />
+                <Text style={styles.logoutText}>Выйти из аккаунта</Text>
+              </>
+            )}
+          </View>
+        </TouchableOpacity>
+      </View>
 
         <View style={styles.footer}>
           <Text style={[styles.footerText, { color: "#6b7280" }]}>Версия приложения 1.0.0</Text>

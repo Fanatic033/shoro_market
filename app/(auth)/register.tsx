@@ -8,7 +8,6 @@ import {
   Platform,
   Pressable,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   TextInput,
   View
@@ -35,7 +34,6 @@ export default function RegisterScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
-      <ScrollView>
         <View style={styles.content}>
           <View style={styles.centerContent}>
             {/* Логотип и заголовок */}
@@ -129,10 +127,10 @@ export default function RegisterScreen() {
                   <ThemedText style={styles.buttonText}>Создать аккаунт</ThemedText>
                 </View>
               </Pressable>
-
+{/* 
               <ThemedText style={styles.termsText}>
                 Создавая аккаунт, вы соглашаетесь с нашими Условиями использования и Политикой конфиденциальности
-              </ThemedText>
+              </ThemedText> */}
 
               <View style={styles.linkContainer}>
                 <ThemedText style={styles.linkText}>Уже есть аккаунт?</ThemedText>
@@ -147,7 +145,6 @@ export default function RegisterScreen() {
             </View>
           </View>
         </View>
-      </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

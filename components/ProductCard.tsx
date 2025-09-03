@@ -3,9 +3,10 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Product } from "@/services/products";
 import { useCartStore } from "@/store";
 import { Colors } from "@/utils/constants/Colors";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React from "react";
-import { Animated, Modal, Pressable, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { Animated, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 
 type Props = {
   item: Product;
@@ -28,7 +29,7 @@ const ProductCard = ({
 }: Props) => {
   const { isInCart, getItemQuantity } = useCartStore();
   const scheme = useColorScheme() ?? "light";
-  const [infoVisible, setInfoVisible] = React.useState(false);
+  // const [infoVisible, setInfoVisible] = React.useState(false);
   const minusScale = React.useRef(new Animated.Value(1)).current;
   const plusScale = React.useRef(new Animated.Value(1)).current;
   const qtyScale = React.useRef(new Animated.Value(1)).current;
@@ -38,6 +39,8 @@ const ProductCard = ({
     const rounded = Math.round((value + Number.EPSILON) * 100) / 100;
     return Number.isInteger(rounded) ? String(rounded) : String(rounded);
   };
+
+  const color = isDark ? 'white' : 'black'
 
   return (
     <View
@@ -64,12 +67,12 @@ const ProductCard = ({
         )}
       </View>
 
-      <TouchableWithoutFeedback onPress={() => setInfoVisible(true)}>
+      <TouchableWithoutFeedback>
         <Image source={item.image} style={styles.image} transition={300}/>
       </TouchableWithoutFeedback>
 
       <View style={styles.productInfo}>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => setInfoVisible(true)}>
+        <TouchableOpacity activeOpacity={0.7}>
           <ThemedText
             style={[styles.title, { color: Colors[scheme].text }]}
             numberOfLines={2}
@@ -119,7 +122,8 @@ const ProductCard = ({
                 style={styles.qtyBtnContainer}
               >
                 <Animated.View style={{ transform: [{ scale: minusScale }] }}>
-                  <ThemedText style={styles.qtyBtn}>-</ThemedText>
+                  {/* <ThemedText style={styles.qtyBtn}>-</ThemedText> */}
+                  <Ionicons name="remove-circle-outline" size={35} color={color}/>
                 </Animated.View>
               </TouchableOpacity>
               <Animated.View style={{ flex: 1, transform: [{ scale: qtyScale }] }}>
@@ -142,7 +146,8 @@ const ProductCard = ({
                 style={styles.qtyBtnContainer}
               >
                 <Animated.View style={{ transform: [{ scale: plusScale }] }}>
-                  <ThemedText style={styles.qtyBtn}>+</ThemedText>
+                  {/* <ThemedText style={styles.qtyBtn}>+</ThemedText> */}
+                  <Ionicons name="add-circle-outline" size={35} color={color}/>
                 </Animated.View>
               </TouchableOpacity>
             </View>
@@ -158,13 +163,15 @@ const ProductCard = ({
               }}
             >
               <Animated.View style={{ transform: [{ scale: plusScale }] }}>
-                <ThemedText style={styles.addBtnText}>+</ThemedText>
+                {/* <ThemedText style={styles.addBtnText}> */}
+                  <Ionicons name="add-circle-outline" size={40} color={color}/>
+                  {/* </ThemedText> */}
               </Animated.View>
             </TouchableOpacity>
           )}
         </Animated.View>
       </View>
-
+{/* 
       <Modal
         visible={infoVisible}
         animationType="fade"
@@ -180,7 +187,7 @@ const ProductCard = ({
             </TouchableOpacity>
           </Pressable>
         </Pressable>
-      </Modal>
+      </Modal> */}
     </View>
   );
 };
@@ -265,23 +272,23 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   qtyBtnContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#000000",
+    // width: 32,
+    // height: 32,
+    // borderRadius: 16,
+    // backgroundColor: "#000000",
     justifyContent: "center",
     alignItems: "center",
   },
-  qtyBtn: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  qtyBtn: { color: "#fff", fontSize: 24, fontWeight: "bold" },
   qtyCount: { fontSize: 18, fontWeight: "700", textAlign: "center", },
   addBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#000000",
+    // width: 40,
+    // height: 40,
+    // borderRadius: 20,
+    // backgroundColor: "#000000",
     justifyContent: "center",
     alignItems: "center",
-    shadowRadius: 6,
+    shadowRadius: 4,
   },
   addBtnText: { color: "#fff", fontSize: 20, fontWeight: "600" },
   modalBackdrop: {
