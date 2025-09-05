@@ -126,7 +126,7 @@ const OrderCard: React.FC<Props> = ({ order, isMenuOpen, onToggleMenu, onCloseMe
       <View style={[styles.row, { marginBottom: 10 }]}>
         <Ionicons name="cash" size={16} color="#6b7280" />
         <ThemedText style={[styles.metaText, styles.total]}>
-          Итого: {order.total.toLocaleString("ru-RU")} ₽
+          Итого: {order.total.toLocaleString("ru-RU")} с
         </ThemedText>
       </View>
 

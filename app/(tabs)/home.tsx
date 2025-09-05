@@ -6,7 +6,7 @@ import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { Widget } from "@/components/ui/Widget";
 import { useAppTheme } from "@/hooks/useAppTheme";
-import { useAuthStore, useCartStore, useProductStore } from "@/store";
+import { useCartStore, useProductStore } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 import React, {
@@ -19,7 +19,6 @@ import React, {
 import {
   Animated,
   Dimensions,
-  Easing,
   FlatList,
   RefreshControl,
   ScrollView,
@@ -31,7 +30,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const HomeScreen = () => {
-  const { user } = useAuthStore(); // получаем пользователя (может влиять на UI/приветствие)
   
   const {
     selectedCategory,
@@ -43,7 +41,7 @@ const HomeScreen = () => {
     isLoading,
   } = useProductStore();
 
-  const { addItem, getItemQuantity, updateQuantity, removeItem, items } =
+  const { addItem, getItemQuantity, updateQuantity, removeItem } =
     useCartStore();
   // Привязку userId к корзине делает authStore при логине/гидратации/логауте
 
@@ -118,30 +116,7 @@ const HomeScreen = () => {
     (SCREEN_WIDTH - OUTER_HORIZONTAL_PADDING - (numColumns - 1) * GUTTER) /
     numColumns;
 
-  const CONTROL_MIN_WIDTH = 40;
-  const CONTROL_MAX_WIDTH = CARD_WIDTH - 20;
-
-  const controlWidthsRef = React.useRef<{ [key: number]: Animated.Value }>({}).current;
-
-  const getControlWidth = useCallback((id: number) => {
-    if (!controlWidthsRef[id]) {
-      controlWidthsRef[id] = new Animated.Value(CONTROL_MIN_WIDTH);
-    }
-    return controlWidthsRef[id];
-  }, [controlWidthsRef, CONTROL_MIN_WIDTH]);
-
-  // ИСПРАВЛЕНИЕ: Следим за изменениями корзины и сбрасываем анимации
-  useEffect(() => {
-    const currentProductIds = new Set(items.map((item) => item.id));
-
-    // Для всех продуктов, которые не в корзине, сбрасываем анимацию
-    Object.keys(controlWidthsRef).forEach((idStr) => {
-      const id = parseInt(idStr);
-      if (!currentProductIds.has(id)) {
-        controlWidthsRef[id].setValue(CONTROL_MIN_WIDTH);
-      }
-    });
-  }, [items, controlWidthsRef, CONTROL_MIN_WIDTH]);
+  
 
   const widgets = [
     {
@@ -167,84 +142,29 @@ const HomeScreen = () => {
   const addToCart = useCallback((product: any) => {
     addItem(product);
     
-    requestAnimationFrame(() => {
-      const animated = getControlWidth(product.id);
-      
-      Animated.timing(animated, {
-        toValue: CONTROL_MAX_WIDTH,
-        duration: 300, 
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: false,
-      }).start();
-    });
-    
     impactAsync(ImpactFeedbackStyle.Light);
-  }, [addItem, getControlWidth, CONTROL_MAX_WIDTH]);
+  }, [addItem]);
   
   const increaseQty = useCallback((id: number) => {
     const currentQty = getItemQuantity(id);
-    
-    requestAnimationFrame(() => {
-      const animated = getControlWidth(id);
-      
-      Animated.timing(animated, {
-        toValue: CONTROL_MAX_WIDTH,
-        duration: 320,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: false,
-      }).start();
     updateQuantity(id, currentQty + 1);
-
-    });
     
     impactAsync(ImpactFeedbackStyle.Light);
-  }, [getItemQuantity, updateQuantity, getControlWidth, CONTROL_MAX_WIDTH]);
+  }, [getItemQuantity, updateQuantity]);
   
   const decreaseQty = useCallback((id: number) => {
     const currentQty = getItemQuantity(id);
   
     if (currentQty <= 1) {
-      // Сначала анимируем скрытие
-        removeItem(id);
-
-      const animated = getControlWidth(id);
-      
-      Animated.timing(animated, {
-        toValue: CONTROL_MIN_WIDTH,
-        duration: 350,
-        easing: Easing.in(Easing.cubic),
-        useNativeDriver: false,
-      }).start(() => {
-        // После завершения анимации удаляем из стора
-      });
+      removeItem(id);
     } else {
-      // Просто уменьшаем количество
       updateQuantity(id, currentQty - 1);
     }
     
     impactAsync(ImpactFeedbackStyle.Light);
-  }, [getItemQuantity, removeItem, updateQuantity, getControlWidth, CONTROL_MIN_WIDTH]);
+  }, [getItemQuantity, removeItem, updateQuantity]);
   
-  // Также важно добавить это в начало компонента для очистки анимаций:
-  const prevItemsRef = useRef(items);
-  
-  useEffect(() => {
-    const prevItems = prevItemsRef.current;
-    const currentItems = items;
-    
-    // Находим товары, которые были удалены из корзины
-    const removedItems = prevItems.filter(prevItem => 
-      !currentItems.some(currentItem => currentItem.id === prevItem.id)
-    );
-    
-    // Сбрасываем анимации для удаленных товаров
-    removedItems.forEach(removedItem => {
-      const animated = getControlWidth(removedItem.id);
-      animated.setValue(CONTROL_MIN_WIDTH);
-    });
-    
-    prevItemsRef.current = items;
-  }, [items, getControlWidth, CONTROL_MIN_WIDTH]);
+  // Удалён общий менеджмент анимаций — каждый ProductCard сам управляет своей шириной
 
   const bottomTabOverflow = useBottomTabOverflow();
 
@@ -382,7 +302,6 @@ const HomeScreen = () => {
                   <ProductCard
                     item={item}
                     isDark={isDark}
-                    getControlWidth={getControlWidth}
                     addToCart={addToCart}
                     increaseQty={increaseQty}
                     decreaseQty={decreaseQty}

@@ -11,7 +11,6 @@ import { Animated, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, View 
 type Props = {
   item: Product;
   isDark: boolean;
-  getControlWidth: (id: number) => Animated.Value;
   addToCart: (product: Product) => void;
   increaseQty: (id: number) => void;
   decreaseQty: (id: number) => void;
@@ -21,7 +20,6 @@ type Props = {
 const ProductCard = ({
   item,
   isDark,
-  getControlWidth,
   addToCart,
   increaseQty,
   decreaseQty,
@@ -33,6 +31,19 @@ const ProductCard = ({
   const minusScale = React.useRef(new Animated.Value(1)).current;
   const plusScale = React.useRef(new Animated.Value(1)).current;
   const qtyScale = React.useRef(new Animated.Value(1)).current;
+  const CONTROL_MIN_WIDTH = 40;
+  const CONTROL_MAX_WIDTH = CARD_WIDTH - 20;
+  const controlWidth = React.useRef(new Animated.Value(isInCart(item.id) ? CONTROL_MAX_WIDTH : CONTROL_MIN_WIDTH)).current;
+
+  React.useEffect(() => {
+    const target = isInCart(item.id) ? CONTROL_MAX_WIDTH : CONTROL_MIN_WIDTH;
+    Animated.timing(controlWidth, {
+      toValue: target,
+      duration: 250,
+      useNativeDriver: false,
+    }).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInCart(item.id)]);
 
   const formatPrice = (value: number) => {
     if (value === null || value === undefined) return '0';
@@ -94,9 +105,7 @@ const ProductCard = ({
 
       {/* Контролы */}
       <View style={styles.qtyContainer}>
-        <Animated.View
-          style={[styles.controlWrapper, { width: getControlWidth(item.id) }]}
-        >
+        <Animated.View style={[styles.controlWrapper, { width: controlWidth }]}>
           {isInCart(item.id) ? (
             <View
               style={[

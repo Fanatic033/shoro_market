@@ -14,24 +14,27 @@ const axiosApi = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
+  
 axiosApi.interceptors.request.use(
   async (config) => {
     try {
       const raw = await AsyncStorage.getItem('auth-storage');
+      
       if (raw) {
         const parsed = JSON.parse(raw);
         const token = parsed?.state?.user?.accessToken;
+        
         if (token) {
           const headers: any = config.headers || {};
           // Axios v1 may use AxiosHeaders; setting via object works when casting
           headers.Authorization = `Bearer ${token}`;
           config.headers = headers;
-        }
-      }
+        } 
+      } 
+      
     } catch(e) {
       // ignore
-      console.error(e)
+      console.error('🚨 Request interceptor error:', e)
     }
     return config;
   },

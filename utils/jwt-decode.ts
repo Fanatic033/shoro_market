@@ -1,16 +1,18 @@
 import { jwtDecode } from "jwt-decode";
 
 interface MyTokenPayload {
-  userId: number;
+  userId?: number; // ⚡️ именно так в твоём токене
+  id?: number;   
   iat: number;
   exp: number;
-  sub: string
+  sub: string;
 }
 
 export function getUserIdFromToken(token: string): number | null {
   try {
     const decoded = jwtDecode<MyTokenPayload>(token);
-    return decoded.userId || null;
+    const extractedUserId = decoded.userId ?? decoded.id ?? null;
+    return extractedUserId;
   } catch (e) {
     console.error("Ошибка декодирования токена", e);
     return null;

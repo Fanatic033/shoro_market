@@ -1,3 +1,6 @@
+import { useAuthStore } from "@/store/authStore"
+import { useCartStore } from "@/store/cartStore"
+import { useOnBoardingStore } from "@/store/onBoardingStore"
 import { Ionicons } from "@expo/vector-icons"
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -5,7 +8,7 @@ import { useFonts } from "expo-font"
 import { Stack } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
 import { StatusBar } from "expo-status-bar"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Platform, useColorScheme } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaProvider } from "react-native-safe-area-context"
@@ -21,6 +24,9 @@ const queryClient = new QueryClient()
 
 export default function RootLayout() {
   const colorScheme = useColorScheme()
+  const [authHydrated, setAuthHydrated] = useState(false)
+  const [onboardingHydrated, setOnboardingHydrated] = useState(false)
+  const [cartHydrated, setCartHydrated] = useState(false)
 
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -28,12 +34,38 @@ export default function RootLayout() {
   })
 
   useEffect(() => {
-    if (loaded) {
+    // subscribe to rehydration of persisted stores so we render only after they are ready
+    const unsubAuth = useAuthStore.persist.onFinishHydration(() => {
+      setAuthHydrated(true)
+    })
+    const unsubOnboarding = useOnBoardingStore.persist.onFinishHydration(() => {
+      setOnboardingHydrated(true)
+    })
+    const unsubCart = useCartStore.persist.onFinishHydration(() => {
+      setCartHydrated(true)
+    })
+
+    // also account for the case when hydration already finished before subscription
+    if (useAuthStore.persist.hasHydrated()) setAuthHydrated(true)
+    if (useOnBoardingStore.persist.hasHydrated()) setOnboardingHydrated(true)
+    if (useCartStore.persist.hasHydrated()) setCartHydrated(true)
+
+    return () => {
+      unsubAuth?.()
+      unsubOnboarding?.()
+      unsubCart?.()
+    }
+  }, [])
+
+  const storesHydrated =  onboardingHydrated && authHydrated   && cartHydrated
+
+  useEffect(() => {
+    if (loaded && storesHydrated) {
       SplashScreen.hideAsync()
     }
-  }, [loaded])
+  }, [loaded, storesHydrated])
 
-  if (!loaded) {
+  if (!loaded || !storesHydrated) {
     return null
   }
 

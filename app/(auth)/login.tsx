@@ -91,7 +91,7 @@ export default function LoginScreen() {
                   </Pressable>
                 </View>
                 <View style={styles.linkContainer2}>
-                <Link href="/(auth)/login" style={styles.link}>
+                <Link href="/(auth)/forgot-password" style={styles.link}>
                 Забыли пароль ?
                 </Link>
               </View>
