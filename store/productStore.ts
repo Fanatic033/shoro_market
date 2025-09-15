@@ -66,7 +66,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         if (lower.includes('товар')) return 'pricetags';
         if (lower.includes('бут') || lower.includes('напит')) return 'beer';
         if (lower.includes('проч')) return 'apps';
-        if (lower.includes('нац')) return 'flag';
+        // if (lower.includes('нац')) return 'flag';
         return 'pricetag';
       };
       const dynamicCategories: Category[] = [

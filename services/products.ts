@@ -1,4 +1,6 @@
+import { useAuthStore } from '@/store';
 import axiosApi from '@/utils/instance';
+import { getUserIdFromToken } from '@/utils/jwt-decode';
 
 export type ProductResponse = {
   url: string | null;
@@ -6,6 +8,7 @@ export type ProductResponse = {
   productName: string;
   price: number;
   category:string
+  guid: string
 };
 
 export type Product = {
@@ -20,10 +23,21 @@ export type Product = {
   discount?: number;
   originalPrice?: number;
 };
-
-
 export async function fetchProducts(): Promise<ProductResponse[]> {
-  const { data } = await axiosApi.get<ProductResponse[]>('/products');
+  const user = useAuthStore.getState().user;
+  const userId = user?.accessToken ? getUserIdFromToken(user.accessToken) : undefined;
+  
+
+  const params: Record<string, any> = {};
+  if (userId) {
+    params.userId = userId;
+  }
+
+  const { data } = await axiosApi.get<ProductResponse[]>('/products', {
+    params,
+  });
+
+  
   return data || [];
 }
 

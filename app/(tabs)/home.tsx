@@ -6,7 +6,7 @@ import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { Widget } from "@/components/ui/Widget";
 import { useAppTheme } from "@/hooks/useAppTheme";
-import { useCartStore, useProductStore } from "@/store";
+import { useAuthStore, useCartStore, useProductStore } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 import React, {
@@ -56,9 +56,13 @@ const HomeScreen = () => {
   }, []);
 
   const { colorScheme, isDark, colors } = useAppTheme();
+  const { user } = useAuthStore();
+  
   useEffect(() => {
-    loadRemoteProducts();
-  }, [loadRemoteProducts]);
+    if (user) {
+      loadRemoteProducts();
+    }
+  }, [loadRemoteProducts, user]);
 
   // const { orders } = useOrderStore();
   const lastTwoOrders = useMemo(() => {
@@ -71,6 +75,7 @@ const HomeScreen = () => {
         deliveryAddress: "ул. Ленина, 1", 
         customerName: "Иван Иванов",
         customerPhone: "+996 555 123 456",
+        deliveryDate: '12 сентября',
         items: [
           { id: 1, title: "Бургер", quantity: 2, price: 250, image: null, category: "Напитки" },
           { id: 2, title: "Кола", quantity: 1, price: 100, image: null, category: "Стаканы" },
@@ -85,6 +90,7 @@ const HomeScreen = () => {
         deliveryAddress: "ул. Пушкина, 10",
         customerName: "Петр Петров",
         customerPhone: "+996 555 654 321",
+        deliveryDate: '12 сентября',
         items: [
           {
             id: 4,
@@ -164,7 +170,6 @@ const HomeScreen = () => {
     impactAsync(ImpactFeedbackStyle.Light);
   }, [getItemQuantity, removeItem, updateQuantity]);
   
-  // Удалён общий менеджмент анимаций — каждый ProductCard сам управляет своей шириной
 
   const bottomTabOverflow = useBottomTabOverflow();
 

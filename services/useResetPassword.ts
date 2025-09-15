@@ -40,7 +40,6 @@ export const useResetPassword = () => {
           throw new Error("Не удалось извлечь userId из токена");
         }
 
-        console.log("📤 Sending PATCH request to:", `/users/password/change/${userId}`);
         const response = await axiosApi.patch<IResetPasswordResponse>(
           `/users/password/change/${userId}`,
           { password },

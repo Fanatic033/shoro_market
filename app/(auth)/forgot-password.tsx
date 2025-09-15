@@ -7,11 +7,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Toast } from "toastify-react-native";
 
 export default function ForgotPasswordScreen() {

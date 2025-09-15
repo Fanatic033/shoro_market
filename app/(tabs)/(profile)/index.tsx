@@ -16,9 +16,9 @@ import Animated, {
 
 export default function ProfileScreen() {
   const router = useRouter()
-  const { user, loading } = useProfile()
+  const { user } = useProfile()
   const { logout } = useAuthStore()
-  const { isDark, adaptiveColor } = useAppTheme()
+  const { adaptiveColor } = useAppTheme()
   const [logoutLoading, setLogoutLoading] = useState(false)
 
   const scrollY = useSharedValue(0)
@@ -39,14 +39,19 @@ export default function ProfileScreen() {
 
   const [menuItems] = useState([
     { icon: "person-outline", label: "Личные данные", action: "personal_info", badge: null, color: "#DC143C" },
-    { icon: "bag-outline", label: "Мои заказы", action: "orders", badge: "3", color: "#000000" },
+    // { icon: "bag-outline", label: "Мои заказы", action: "orders", badge: "3", color: "#000000" },
     { icon: "location-outline", label: "Адреса доставки", action: "addresses", badge: null, color: "#DC143C" },
     { icon: "notifications-outline", label: "Уведомления", action: "notifications", badge: null, color: "#000000" },
     { icon: "help-circle-outline", label: "Поддержка", action: "support", badge: null, color: "#DC143C" },
-    { icon: "settings-outline", label: "Настройки", action: "settings", badge: null, color: "#000000" },
+    // { icon: "settings-outline", label: "Настройки", action: "settings", badge: null, color: "#000000" },
   ])
 
   const handleMenuClick = (action: string) => {
+    if (action === "addresses") {
+      router.push("/(tabs)/(profile)/addresses")
+      return
+    }
+   
     console.log("Нажато:", action)
   }
   const handleLogout = async () => {
@@ -70,14 +75,14 @@ export default function ProfileScreen() {
           styles.animatedHeader,
           {
             backgroundColor: adaptiveColor("#e5e7eb", "#111827"),
-            borderBottomColor: adaptiveColor("#e5e7eb", "#fff"),
+            borderBottomColor: adaptiveColor("#e5e7eb", "#ff0f0"),
           },
           headerAnimatedStyle,
         ]}
       >
         <View style={styles.headerContent}> 
           <Text style={[styles.headerName, { color: adaptiveColor("#374151", "#f9fafb") }]}>
-            {user?.name || "Пользователь"}
+            {user?.name || "Пользователь"} 
           </Text>
         </View>
       </Animated.View>
@@ -98,7 +103,7 @@ export default function ProfileScreen() {
             </View>
 
             <View style={styles.userDetails}>
-              <Text style={[styles.userName, { color: adaptiveColor("#374151", "#f9fafb") }]}>{user?.name}</Text>
+              <Text style={[styles.userName, { color: adaptiveColor("#374151", "#f9fafb") }]}>{user?.name || 'Пользователь'}</Text>
 
               <View style={styles.userMeta}>
               <View style={styles.metaItem}>
@@ -293,7 +298,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   menuList: {
-    gap: 8,
+    gap: 10,
   },
   menuItem: {
     borderRadius: 12,

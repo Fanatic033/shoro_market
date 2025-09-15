@@ -1,3 +1,4 @@
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { useLogin } from "@/services/useLogin";
 import { useAuthStore } from "@/store/authStore";
@@ -5,35 +6,63 @@ import { IUser } from "@/types/user.interface";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, SafeAreaView, StyleSheet, TextInput, View } from "react-native";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Toast } from "toastify-react-native";
 
 export default function LoginScreen() {
-  const [username, setUsername] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const toggleShowPassword = () => {
-      setShowPassword(!showPassword);
+    setShowPassword(!showPassword);
   };
-  
+
   const { mutate: login, isPending, error } = useLogin();
   const setUser = useAuthStore((s) => s.setUser);
 
   const onSubmit = () => {
-    if (username && password) {
+    if (phoneNumber && password) {
       login(
-        { username: username, password },
+        { phoneNumber: phoneNumber, password },
         {
           onSuccess: (auth) => {
             const user: IUser = auth as unknown as IUser;
             setUser(user);
-            Toast.success("Вы успешно вошли в аккаунт!", "bottom")
+            Toast.success("Вы успешно вошли в аккаунт!", "bottom");
             router.navigate("/(tabs)/home");
           },
         }
       );
     }
+  };
+
+  const handlePhoneChange = (text: string) => {
+    const digitsOnly = text.replace(/\D/g, ""); // оставляем только цифры
+
+    if (digitsOnly === "") {
+      setPhoneNumber("0");
+      return;
+    }
+
+    let formatted = digitsOnly.startsWith("0") ? digitsOnly : "0" + digitsOnly;
+
+    // Максимум 10 цифр (0 + 9)
+    if (formatted.length > 10) {
+      formatted = formatted.slice(0, 10);
+    }
+
+    setPhoneNumber(formatted);
   };
 
   return (
@@ -42,90 +71,111 @@ export default function LoginScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
-        <View style={styles.content}>
-          <View style={styles.centerContent}>
-            <View style={styles.logoSection}>
-            </View>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.content}>
+            <View style={styles.centerContent}>
+              <View style={styles.logoSection}></View>
 
-            {/* Карточка с формой */}
-            <View style={styles.card}>
-              <ThemedText style={styles.cardTitle}>
-                Войти в аккаунт
-              </ThemedText>
+              {/* Карточка с формой */}
+              <View style={styles.card}>
+                <ThemedText style={styles.cardTitle}>
+                  Войти в аккаунт
+                </ThemedText>
 
-              <View style={styles.inputContainer}>
-                <ThemedText style={styles.label}>Имя пользователя</ThemedText>
-                <View style={[styles.inputWrapper, error && styles.inputWrapperError]}>
-                  <Ionicons name="person-outline" size={20} color="#6B7280" />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Введите имя пользователя"
-                    autoCapitalize="none"
-                    value={username}
-                    onChangeText={setUsername}
-                    placeholderTextColor="#9CA3AF"
-                    editable={!isPending}
-                  />
+                <View style={styles.inputContainer}>
+                  <ThemedText style={styles.label}>Номер телефона</ThemedText>
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      error && styles.inputWrapperError,
+                    ]}
+                  >
+                    <Ionicons name="call-outline" size={20} color="#6B7280" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="0-700123456"
+                      autoCapitalize="none"
+                      value={phoneNumber}
+                      onChangeText={handlePhoneChange}
+                      placeholderTextColor="#9CA3AF"
+                      editable={!isPending}
+                      keyboardType="phone-pad"
+                    />
+                  </View>
                 </View>
-              </View>
 
-              <View style={styles.inputContainer}>
-                <ThemedText style={styles.label}>Пароль</ThemedText>
-                <View style={[styles.inputWrapper, error && styles.inputWrapperError]}>
-                  <Ionicons name="lock-closed-outline" size={20} color="#6B7280" />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Введите пароль"
-                    secureTextEntry={!showPassword}
-                    value={password}
-                    onChangeText={setPassword}
-                    placeholderTextColor="#9CA3AF"
-                    editable={!isPending}
-                  />
-                  <Pressable onPress={toggleShowPassword} style={styles.eyeIcon}>
+                <View style={styles.inputContainer}>
+                  <ThemedText style={styles.label}>Пароль</ThemedText>
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      error && styles.inputWrapperError,
+                    ]}
+                  >
                     <Ionicons
-                      name={showPassword ? "eye-off" : "eye"}
+                      name="lock-closed-outline"
                       size={20}
                       color="#6B7280"
                     />
-                  </Pressable>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Введите пароль"
+                      secureTextEntry={!showPassword}
+                      value={password}
+                      onChangeText={setPassword}
+                      placeholderTextColor="#9CA3AF"
+                      editable={!isPending}
+                    />
+                    <Pressable
+                      onPress={toggleShowPassword}
+                      style={styles.eyeIcon}
+                    >
+                      <Ionicons
+                        name={showPassword ? "eye-off" : "eye"}
+                        size={20}
+                        color="#6B7280"
+                      />
+                    </Pressable>
+                  </View>
+                  <View style={styles.linkContainer2}>
+                    <Link href="/(auth)/forgot-password" style={styles.link}>
+                      Забыли пароль ?
+                    </Link>
+                  </View>
                 </View>
-                <View style={styles.linkContainer2}>
-                <Link href="/(auth)/forgot-password" style={styles.link}>
-                Забыли пароль ?
-                </Link>
-              </View>
-              </View>
 
-              <Pressable 
-                style={[styles.button, isPending && styles.buttonDisabled]} 
-                onPress={onSubmit} 
-                disabled={isPending}
-              >
-                <View style={styles.buttonContent}>
-                  <ThemedText style={styles.buttonText}>
-                    {isPending ? "Вход..." : "Войти"}
+                <Pressable
+                  style={[styles.button, isPending && styles.buttonDisabled]}
+                  onPress={onSubmit}
+                  disabled={isPending}
+                >
+                  <View style={styles.buttonContent}>
+                    <ThemedText style={styles.buttonText}>
+                      {isPending ? "Вход..." : "Войти"}
+                    </ThemedText>
+                  </View>
+                </Pressable>
+
+                {error && (
+                  <ThemedText style={styles.errorText}>
+                    {error.message}
                   </ThemedText>
+                )}
+
+<View style={{ marginVertical: 16 }}>
+  <GoogleSignInButton />
+</View>
+
+                <View style={styles.linkContainer}>
+                  <ThemedText style={styles.linkText}>Нет аккаунта?</ThemedText>
+                  <Link href="/(auth)/register" style={styles.link}>
+                    Зарегистрироваться
+                  </Link>
                 </View>
-              </Pressable>
-
-              {error && (
-                <ThemedText style={styles.errorText}>
-                  {error.message}
-                </ThemedText>
-              )}
-
-              <View style={styles.linkContainer}>
-                <ThemedText style={styles.linkText}>Нет аккаунта?</ThemedText>
-                <Link href="/(auth)/register" style={styles.link}>
-                  Зарегистрироваться
-                </Link>
               </View>
             </View>
-
-          
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -151,7 +201,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 32,
   },
- 
+
   subtitle: {
     fontSize: 18,
     color: "rgba(255,255,255,0.9)",
@@ -261,6 +311,21 @@ const styles = StyleSheet.create({
   link: {
     color: "#e5393",
     fontWeight: "600",
+    fontSize: 14,
+  },
+  separator: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 24,
+  },
+  line: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#E5E7EB",
+  },
+  orText: {
+    marginHorizontal: 12,
+    color: "#6B7280",
     fontSize: 14,
   },
 });

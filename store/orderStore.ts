@@ -11,6 +11,7 @@ export interface Order {
   customerName: string;
   customerPhone: string;
   comment?: string;
+  deliveryDate: string; // ✅ Добавлено: дата доставки в формате YYYY-MM-DD
   status: 'pending' | 'confirmed' | 'preparing' | 'delivering' | 'delivered' | 'cancelled';
   createdAt: Date;
   estimatedDelivery?: Date;
@@ -75,4 +76,4 @@ export const useOrderStore = create<OrderState>()(
       partialize: (state) => ({ orders: state.orders }),
     }
   )
-);
+)

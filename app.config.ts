@@ -27,11 +27,13 @@ const config: ExpoConfig = {
   },
   web: {
     bundler: 'metro',
-    output: 'static',
+    output: 'server',
     favicon: './assets/images/favicon.png',
   },
   plugins: [
     'expo-router',
+    "expo-font",
+    "expo-web-browser",
     [
       'expo-splash-screen',
       {

@@ -1,7 +1,15 @@
 import { IUser } from '@/types/user.interface';
 
+export interface IRegisterData{
+		email?: string,
+		password: string,
+		name: string,
+		phoneNumber: string,
+		address?: string
+}
+
 export interface IAuthFormData {
-	username: string;
+	phoneNumber: string;
 	password: string;
 }
 

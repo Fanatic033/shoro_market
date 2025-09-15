@@ -3,7 +3,7 @@ import { IUser } from "@/types/user.interface";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-
+// store/authStore.ts
 interface AuthState {
   user: IUser | null;
   restoreToken: string | null;
@@ -19,7 +19,11 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       restoreToken: null,
-      setUser: (user) => set({ user }),
+
+      setUser: (user) => {
+        set({ user });
+      },
+
       updateTokens: (tokens) =>
         set((state) => ({
           user: state.user
@@ -32,8 +36,8 @@ export const useAuthStore = create<AuthState>()(
         })),
       setRestoreToken: (token) => set({ restoreToken: token }),
       clearRestoreToken: () => set({ restoreToken: null }),
+
       logout: () => {
-        // Очищаем только авторизацию, корзину сохраняем
         set({ user: null, restoreToken: null });
       },
     }),

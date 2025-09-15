@@ -76,7 +76,7 @@ const OrderCard: React.FC<Props> = ({ order, isMenuOpen, onToggleMenu, onCloseMe
                   addItemsFromOrder(order.items);
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
                   setTimeout(() => {
-                    router.push('/(tabs)/cart');
+                    router.push('/(tabs)/(cart)');
                   }, Platform.select({ ios: 120, android: 120, default: 120 }));
                 }}
               >

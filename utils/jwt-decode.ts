@@ -1,18 +1,23 @@
+// utils/jwt-decode.ts
+
 import { jwtDecode } from "jwt-decode";
 
 interface MyTokenPayload {
-  userId?: number; // ⚡️ именно так в твоём токене
-  id?: number;   
+  sub: string;  // теперь это строка с ID, например "14"
   iat: number;
   exp: number;
-  sub: string;
+  // userId больше не существует — удаляем из интерфейса
 }
 
 export function getUserIdFromToken(token: string): number | null {
   try {
     const decoded = jwtDecode<MyTokenPayload>(token);
-    const extractedUserId = decoded.userId ?? decoded.id ?? null;
-    return extractedUserId;
+
+    // Парсим sub как число
+    const userId = parseInt(decoded.sub, 10);
+
+    // Проверяем, что получилось число, а не NaN
+    return isNaN(userId) ? null : userId;
   } catch (e) {
     console.error("Ошибка декодирования токена", e);
     return null;

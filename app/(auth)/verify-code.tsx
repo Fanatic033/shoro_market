@@ -4,7 +4,8 @@ import { useAuthStore } from "@/store/authStore";
 import axiosApi from "@/utils/instance";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { Keyboard, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, StyleSheet, TextInput, TouchableWithoutFeedback, View } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, TouchableWithoutFeedback, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Toast } from "toastify-react-native";
 
 export default function VerifyCodeScreen() {
@@ -101,20 +102,16 @@ export default function VerifyCodeScreen() {
         
           
         const result: any = await verifyCodeMutation.mutateAsync(params);
-        console.log('🔍 Verify code result:', result)
         
         // Сохраняем restoreToken для использования при смене пароля
         const restoreToken = result?.restoreToken;
         if (restoreToken) {
-          console.log('🔑 Restore token received:', `${restoreToken.substring(0, 20)}...`);
           setRestoreToken(restoreToken);
-          console.log('✅ Restore token saved to store');
           
           router.navigate({
             pathname: "/(auth)/reset-password",
           });
         } else {
-          console.log('❌ No restore token in response');
           setErrorMessage("Ошибка при получении токена восстановления");
         }
         

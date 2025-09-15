@@ -24,6 +24,7 @@ const initialOrders: Order[] = [
     deliveryAddress: "ул. Ленина, 1",
     customerName: "Иван Иванов",
     customerPhone: "+996 555 123 456",
+    deliveryDate: '12 сентября',
     items: [
       { id: 1, title: "ШОРО Чалап Классический 0.5л", quantity: 1, price: 500, image: null, category: "drinks" },
       { id: 2, title: "ШОРО Айран Традиционный 0.5л", quantity: 2, price: 375, image: null, category: "drinks" },
@@ -37,6 +38,7 @@ const initialOrders: Order[] = [
     deliveryAddress: "ул. Пушкина, 10",
     customerName: "Петр Петров",
     customerPhone: "+996 555 654 321",
+    deliveryDate: '12 сентября',
     items: [{ id: 3, title: "ШОРО Боза Домашняя 0.5л", quantity: 2, price: 430, image: null, category: "drinks" }],
   },
   {
@@ -47,6 +49,7 @@ const initialOrders: Order[] = [
     deliveryAddress: "ул. Гагарина, 5",
     customerName: "Сергей Сергеев",
     customerPhone: "+996 555 789 123",
+    deliveryDate: '12 сентября',
     items: [{ id: 4, title: "ШОРО Тан с мятой 0.5л", quantity: 1, price: 540, image: null, category: "drinks" }],
   },
 ];
