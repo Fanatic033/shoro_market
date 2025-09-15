@@ -1,10 +1,11 @@
-import { Product } from '@/services/products';
+import { IProduct } from '@/types/products.interface';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export interface CartItem extends Omit<Product, 'inStock'> {
+export interface CartItem extends Omit<IProduct, 'inStock'> {
   quantity: number;
+  guid: string
 }
 
 interface CartState {
@@ -15,7 +16,7 @@ interface CartState {
   total: number;
   
   // Actions
-  addItem: (item: Product) => void;
+  addItem: (item: IProduct) => void;
   removeItem: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
   clearCart: () => void;
@@ -35,6 +36,7 @@ export const useCartStore = create<CartState>()(
       total: 0,
 
       addItem: (item) => {
+        console.log('Добавляемый товар:', item); 
         const state = get();
         const existingItem = state.items.find(i => i.id === item.id);
         
@@ -50,7 +52,7 @@ export const useCartStore = create<CartState>()(
         } else {
           // Добавляем новый товар
           set((state) => ({
-            items: [...state.items, { ...item, quantity: 1 }]
+            items: [...state.items, { ...item, quantity: 1,guid: item.guid }]
           }));
         }
         
@@ -136,6 +138,7 @@ export const useCartStore = create<CartState>()(
                 id: orderItem.id,
                 title: orderItem.title,
                 price: orderItem.price,
+                guid: orderItem.guid,
                 originalPrice: orderItem.originalPrice,
                 image,
                 isNew: orderItem.isNew,

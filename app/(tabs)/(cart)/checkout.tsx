@@ -2,18 +2,19 @@ import BackButton from "@/components/ui/BackButton";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { useAppTheme } from "@/hooks/useAppTheme";
-import { useAddressStore, useCartStore, useOrderStore } from "@/store";
+import { useAddressStore, useAuthStore, useCartStore, useOrderStore } from "@/store";
+import { PAYMENT_METHODS } from "@/utils/constants/paymentMethods";
 import { Ionicons } from "@expo/vector-icons";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  TextInput,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    TextInput,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Toast } from "toastify-react-native";
@@ -37,22 +38,24 @@ export default function CheckoutScreen() {
   const {
     items: cartItems,
     subtotal,
-    deliveryCost,
     total,
+    deliveryCost,
     clearCart,
   } = useCartStore();
   const { createOrder } = useOrderStore();
   const defaultAddress = useAddressStore((state) => state.defaultAddress);
+  const user = useAuthStore(state => state.user);
 
  
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [checkoutForm, setCheckoutForm] = useState({
-    name: "",
-    phone: "",
+    name: user?.name || "",
+    contactPhone: user?.phoneNumber || "",
     address: defaultAddress?.fullAddress || "",
-    comment: "",
-    deliveryDate: new Date(Date.now() + 86400000), // Завтра по умолчанию
+    description: "",
+    deliveryDate: new Date(Date.now() + 86400000),
+    paymentMethod: "наличные",
   });
 
   // Обновляем адрес в форме при изменении defaultAddress
@@ -69,10 +72,12 @@ export default function CheckoutScreen() {
     router.push("/(tabs)/(profile)/addresses");
   };
 
+  
+
   const handleSubmitOrder = () => {
     if (
       !checkoutForm.name ||
-      !checkoutForm.phone ||
+      !checkoutForm.contactPhone ||
       !checkoutForm.address ||
       !checkoutForm.deliveryDate
     ) {
@@ -80,20 +85,24 @@ export default function CheckoutScreen() {
       return;
     }
 
-    // Создаем заказ через store
-    createOrder({
-      items: cartItems,
-      total: total,
-      deliveryAddress: checkoutForm.address,
-      customerName: checkoutForm.name,
-      customerPhone: checkoutForm.phone,
-      comment: checkoutForm.comment,
-      deliveryDate: checkoutForm.deliveryDate.toISOString().split("T")[0], // Формат YYYY-MM-DD
-    });
-
-    Toast.success("Заказ успешно оформлен!");
-    clearCart(); // Очищаем корзину после оформления заказа
-    router.back(); // Возвращаемся к корзине
+    try{
+      const checkoutData = {
+        customerName: checkoutForm.name,
+        contactPhone: checkoutForm.contactPhone,
+        deliveryDate: checkoutForm.deliveryDate.toISOString().split("T")[0],
+        payment: checkoutForm.paymentMethod,
+        description: checkoutForm.description,
+        deliveryAddress: checkoutForm.address,
+        products: cartItems,
+      } 
+      createOrder(checkoutData)
+      Toast.success("Заказ успешно оформлен!");
+      clearCart(); // Очищаем корзину после оформления заказа
+      router.back(); // Возвращаемся к корзине
+    }catch(e) {
+      Toast.error('Ошибка при создании заказа',)
+      console.error('Ошибка при создании заказа',e)
+    }
   };
  
 
@@ -101,7 +110,7 @@ export default function CheckoutScreen() {
     <SafeAreaView
       style={{
         flex: 1,
-        backgroundColor: adaptiveColor("#f9fafb", "#0f172a"),
+        backgroundColor: adaptiveColor("#fff","#151718"),
       }}
     >
       {/* Header */}
@@ -112,7 +121,6 @@ export default function CheckoutScreen() {
           paddingHorizontal: 16,
           paddingVertical: 12,
           gap: 12,
-          backgroundColor: adaptiveColor("#ffffff", "#1e293b"),
           borderBottomWidth: 1,
           borderBottomColor: adaptiveColor("#e5e7eb", "#334155"),
           shadowColor: adaptiveColor("#000000", "#000000"),
@@ -229,9 +237,9 @@ export default function CheckoutScreen() {
                     <TextInput
                       placeholder="0700123456"
                       placeholderTextColor={adaptiveColor("#9ca3af", "#6b7280")}
-                      value={checkoutForm.phone}
+                      value={checkoutForm.contactPhone}
                       onChangeText={(text) =>
-                        setCheckoutForm({ ...checkoutForm, phone: text })
+                        setCheckoutForm({ ...checkoutForm, contactPhone: text })
                       }
                       keyboardType="phone-pad"
                       style={{
@@ -268,6 +276,7 @@ export default function CheckoutScreen() {
                         Адрес доставки *
                       </ThemedText>
                     </View>
+                    {/* Payment Method Section */}
                     <Pressable
                       onPress={handleAddressPress}
                       style={{
@@ -404,9 +413,9 @@ export default function CheckoutScreen() {
                     <TextInput
                       placeholder="Дополнительная информация"
                       placeholderTextColor={adaptiveColor("#9ca3af", "#6b7280")}
-                      value={checkoutForm.comment}
+                      value={checkoutForm.description}
                       onChangeText={(text) =>
-                        setCheckoutForm({ ...checkoutForm, comment: text })
+                        setCheckoutForm({ ...checkoutForm, description: text })
                       }
                       multiline
                       numberOfLines={3}
@@ -524,6 +533,100 @@ export default function CheckoutScreen() {
                   </View>
                 </View>
               </View>
+
+              <View style={{ gap: 16, marginTop: 8 }}>
+  <ThemedText
+    type="defaultSemiBold"
+    style={{
+      fontSize: 18,
+      color: adaptiveColor("#111827", "#f8fafc"),
+    }}
+  >
+    Способ оплаты
+  </ThemedText>
+
+  <ScrollView
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={{
+      gap: 12,
+      paddingHorizontal: 4,
+      paddingVertical: 8,
+    }}
+  >
+    {PAYMENT_METHODS.map((method) => {
+      const isActive = checkoutForm.paymentMethod === method.id;
+      return (
+        <Pressable
+          key={method.id}
+          onPress={() =>
+            setCheckoutForm({ ...checkoutForm, paymentMethod: method.id })
+          }
+          style={[
+            {
+              minWidth: 120,
+              paddingVertical: 16,
+              paddingHorizontal: 12,
+              borderRadius: 16,
+              borderWidth: 2,
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            },
+            isActive
+              ? {
+                  borderColor: method.color,
+                  backgroundColor: adaptiveColor(
+                    `${method.color}10`,
+                    `${method.color}20`
+                  ),
+                  shadowColor: method.color,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 8,
+                  elevation: 4,
+                }
+              : {
+                  borderColor: adaptiveColor("#e5e7eb", "#374151"),
+                  backgroundColor: adaptiveColor("#ffffff", "#1e293b"),
+                },
+          ]}
+        >
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: isActive
+                ? method.color
+                : adaptiveColor("#f3f4f6", "#374151"),
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Ionicons
+              name={method.icon as any}
+              size={20}
+              color={isActive ? "#ffffff" : adaptiveColor("#6b7280", "#9ca3af")}
+            />
+          </View>
+          <ThemedText
+            style={{
+              fontSize: 14,
+              fontWeight: "500",
+              color: isActive
+                ? method.color
+                : adaptiveColor("#374151", "#d1d5db"),
+              textAlign: "center",
+            }}
+          >
+            {method.title}
+          </ThemedText>
+        </Pressable>
+      );
+    })}
+  </ScrollView>
+</View>
 
               {/* Submit Button */}
               <Pressable

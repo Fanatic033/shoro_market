@@ -2,10 +2,11 @@ import { useBottomTabOverflow } from "@/components/ui/TabBarBackground"
 import { useAppTheme } from "@/hooks/useAppTheme"
 import { useProfile } from "@/services/useProfile"
 import { useAuthStore } from "@/store"
+import axiosApi from "@/utils/instance"
 import { Ionicons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
-import { useState } from "react"
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import React, { useState } from "react"
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import Animated, {
   Extrapolate,
   interpolate,
@@ -13,6 +14,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated"
+import { Toast } from "toastify-react-native"
 
 export default function ProfileScreen() {
   const router = useRouter()
@@ -20,6 +22,50 @@ export default function ProfileScreen() {
   const { logout } = useAuthStore()
   const { adaptiveColor } = useAppTheme()
   const [logoutLoading, setLogoutLoading] = useState(false)
+  const [showEmailModal, setShowEmailModal] = useState(false);
+const [newEmail, setNewEmail] = useState("");
+const [emailError, setEmailError] = useState<string | null>(null);
+const [isSubmitting, setIsSubmitting] = useState(false);
+const updateEmail = async () => {
+  if (!user?.id) {
+    Toast.error("Пользователь не найден");
+    return;
+  }
+
+  // Валидация email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(newEmail)) {
+    setEmailError("Введите корректный email");
+    return;
+  }
+
+  setIsSubmitting(true);
+  setEmailError(null);
+
+  try {
+    const response = await axiosApi.patch(`/users/${user.id}`, {
+      email: newEmail,
+    });
+
+    if (response.status === 200) {
+      Toast.success("Email успешно обновлен!");
+      setShowEmailModal(false);
+      setNewEmail("");
+      
+      // Обновляем профиль — чтобы useProfile подтянул новые данные
+      const updatedUser = {
+        ...user,
+        email: newEmail,
+      };
+      useAuthStore.getState().setUser(updatedUser);
+    }
+  } catch (error) {
+    console.error("Ошибка обновления email:", error);
+    Toast.error("Не удалось обновить email");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const scrollY = useSharedValue(0)
 
@@ -28,6 +74,7 @@ export default function ProfileScreen() {
       scrollY.value = event.contentOffset.y
     },
   })
+  
 
   const headerAnimatedStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, 100, 150], [0, 0, 1], Extrapolate.CLAMP)
@@ -119,6 +166,32 @@ export default function ProfileScreen() {
             </View>
           </View>
         </View>
+        {!user?.email && (
+  <TouchableOpacity
+    style={{
+      backgroundColor: adaptiveColor("#fef2f2", "#451a1a"),
+      borderRadius: 12,
+      padding: 16,
+      marginTop: 16,
+      borderWidth: 1,
+      borderColor: adaptiveColor("#fecaca", "#7f1d1d"),
+    }}
+    onPress={() => setShowEmailModal(true)}
+  >
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <Ionicons name="alert-circle" size={20} color={adaptiveColor("#dc2626", "#fca5a5")} />
+      <Text style={{
+        color: adaptiveColor("#dc2626", "#fca5a5"),
+        fontSize: 14,
+        fontWeight: '500',
+        flex: 1,
+      }}>
+        Привяжите email для безопасности и восстановления пароля
+      </Text>
+      <Ionicons name="chevron-forward" size={18} color={adaptiveColor("#dc2626", "#fca5a5")} />
+    </View>
+  </TouchableOpacity>
+)}
 
         <View style={styles.menuSection}>
           <Text style={[styles.sectionTitle, { color: adaptiveColor("#374151", "#f9fafb") }]}>Меню</Text>
@@ -178,6 +251,123 @@ export default function ProfileScreen() {
           <Text style={[styles.footerText, { color: "#6b7280" }]}>Версия приложения 1.0.0</Text>
         </View>
       </Animated.ScrollView>
+      {/* Email Modal */}
+{showEmailModal && (
+  <View style={{
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  }}>
+    <View style={{
+      width: '90%',
+      maxWidth: 400,
+      backgroundColor: adaptiveColor("#ffffff", "#1f2937"),
+      borderRadius: 16,
+      padding: 20,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 5,
+    }}>
+      <Text style={{
+        fontSize: 18,
+        fontWeight: '600',
+        color: adaptiveColor("#111827", "#f9fafb"),
+        marginBottom: 16,
+        textAlign: 'center',
+      }}>
+        Привязать email
+      </Text>
+
+      <TextInput
+        placeholder="Введите ваш email"
+        placeholderTextColor={adaptiveColor("#9ca3af", "#6b7280")}
+        value={newEmail}
+        onChangeText={(text) => {
+          setNewEmail(text);
+          setEmailError(null);
+        }}
+        autoCorrect={false}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        style={{
+          borderWidth: 2,
+          borderColor: emailError ? adaptiveColor("#ef4444", "#f87171") : adaptiveColor("#e5e7eb", "#374151"),
+          borderRadius: 12,
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          fontSize: 16,
+          backgroundColor: adaptiveColor("#fafafa", "#111827"),
+          color: adaptiveColor("#111827", "#f9fafb"),
+          marginBottom: 12,
+        }}
+      />
+
+      {emailError && (
+        <Text style={{
+          color: adaptiveColor("#ef4444", "#f87171"),
+          fontSize: 14,
+          marginBottom: 12,
+        }}>
+          {emailError}
+        </Text>
+      )}
+
+      <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
+        <Pressable
+          onPress={() => setShowEmailModal(false)}
+          style={{
+            flex: 1,
+            paddingVertical: 12,
+            borderRadius: 10,
+            backgroundColor: adaptiveColor("#e5e7eb", "#374151"),
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{
+            color: adaptiveColor("#374151", "#e5e7eb"),
+            fontSize: 16,
+            fontWeight: '600',
+          }}>
+            Отмена
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={updateEmail}
+          disabled={isSubmitting}
+          style={{
+            flex: 1,
+            paddingVertical: 12,
+            borderRadius: 10,
+            backgroundColor: isSubmitting ? adaptiveColor("#991b1b", "#b91c1c") : adaptiveColor("#dc2626", "#ef4444"),
+            alignItems: 'center',
+            opacity: isSubmitting ? 0.8 : 1,
+          }}
+        >
+          {isSubmitting ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Text style={{
+              color: "#ffffff",
+              fontSize: 16,
+              fontWeight: '600',
+            }}>
+              Сохранить
+            </Text>
+          )}
+        </Pressable>
+      </View>
+    </View>
+  </View>
+)}
     </View>
   )
 }

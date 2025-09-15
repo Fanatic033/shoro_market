@@ -1,4 +1,4 @@
-import { Product } from '@/services/products';
+import { IProduct } from '@/types/products.interface';
 import { Ionicons } from '@expo/vector-icons';
 import { create } from 'zustand';
 
@@ -11,7 +11,7 @@ export interface Category {
 }
 
 interface ProductState {
-  products: Product[];
+  products: IProduct[];
   categories: Category[];
   selectedCategory: string;
   searchQuery: string;
@@ -24,7 +24,7 @@ interface ProductState {
   setSearchQuery: (query: string) => void;
   setSortBy: (sort: 'default' | 'price_asc' | 'price_desc' | 'name' | 'newest') => void;
   loadRemoteProducts: () => Promise<void>;
-  getFilteredProducts: () => Product[];
+  getFilteredProducts: () => IProduct[];
 }
 
 export const useProductStore = create<ProductState>((set, get) => ({

@@ -3,7 +3,7 @@ import { IUser } from "@/types/user.interface";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-// store/authStore.ts
+
 interface AuthState {
   user: IUser | null;
   restoreToken: string | null;

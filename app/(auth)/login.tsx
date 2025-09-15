@@ -1,4 +1,3 @@
-import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { useLogin } from "@/services/useLogin";
 import { useAuthStore } from "@/store/authStore";
@@ -161,10 +160,10 @@ export default function LoginScreen() {
                     {error.message}
                   </ThemedText>
                 )}
-
+{/* 
 <View style={{ marginVertical: 16 }}>
   <GoogleSignInButton />
-</View>
+</View> */}
 
                 <View style={styles.linkContainer}>
                   <ThemedText style={styles.linkText}>Нет аккаунта?</ThemedText>

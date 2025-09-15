@@ -31,7 +31,7 @@ export function useProfile() {
     };
 
     fetchProfile();
-  }, [user?.accessToken]);
+  }, [user?.accessToken,user?.id]);
 
   return { user, loading };
 }

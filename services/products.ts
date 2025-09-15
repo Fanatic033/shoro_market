@@ -1,28 +1,8 @@
 import { useAuthStore } from '@/store';
+import { IProduct, ProductResponse } from '@/types/products.interface';
 import axiosApi from '@/utils/instance';
 import { getUserIdFromToken } from '@/utils/jwt-decode';
 
-export type ProductResponse = {
-  url: string | null;
-  productId: number;
-  productName: string;
-  price: number;
-  category:string
-  guid: string
-};
-
-export type Product = {
-  id: number;
-  title: string;
-  price: number;
-  image: any;
-  category: string;
-  inStock: boolean;
-  url?: string | null;
-  isNew?: boolean;
-  discount?: number;
-  originalPrice?: number;
-};
 export async function fetchProducts(): Promise<ProductResponse[]> {
   const user = useAuthStore.getState().user;
   const userId = user?.accessToken ? getUserIdFromToken(user.accessToken) : undefined;
@@ -42,7 +22,7 @@ export async function fetchProducts(): Promise<ProductResponse[]> {
 }
 
 // Функция для преобразования ответа API в формат приложения
-export async function loadProducts(): Promise<Product[]> {
+export async function loadProducts(): Promise<IProduct[]> {
   const products = await fetchProducts();
   
   return products.map(product => {
@@ -53,6 +33,7 @@ export async function loadProducts(): Promise<Product[]> {
     return {
       id: product.productId,
       title: product.productName,
+      guid: product.guid,
       price: product.price,
       category: product.category,
       image,

@@ -47,13 +47,18 @@ const HomeScreen = () => {
 
 
   const [refreshing, setRefreshing] = useState(false);
-
-  const onRefresh = useCallback(() => {
+  
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 800);
-  }, []);
+    try {
+      await loadRemoteProducts(); // ← Загружаем товары с сервера
+    } catch (error) {
+      console.error("Ошибка при обновлении товаров:", error);
+      // Можно показать Toast.error("Не удалось обновить товары")
+    } finally {
+      setRefreshing(false); // ← Всегда скрываем спиннер
+    }
+  }, [loadRemoteProducts]);
 
   const { colorScheme, isDark, colors } = useAppTheme();
   const { user } = useAuthStore();

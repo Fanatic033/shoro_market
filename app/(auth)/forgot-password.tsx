@@ -28,7 +28,7 @@ export default function ForgotPasswordScreen() {
    await axios.post(`http://192.168.8.207:8080/api/auth/password/restore?email=${email}`);
 
       Toast.success("Код отправлен на вашу почту!", "bottom");
-      console.log(email)
+      console.log(`mail: ${email}`)
     } catch (err: any) {
       console.error("Ошибка при запросе:", err?.response?.data || err.message);
       Toast.error("Ошибка при отправке кода");
