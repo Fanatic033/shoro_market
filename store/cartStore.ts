@@ -1,7 +1,8 @@
-import { IProduct } from '@/types/products.interface';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+
+import { IProduct } from '@/types/products.interface';
 
 export interface CartItem extends Omit<IProduct, 'inStock'> {
   quantity: number;
@@ -19,6 +20,8 @@ interface CartState {
   addItem: (item: IProduct) => void;
   removeItem: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
+  increaseItem: (id: number) => void;
+  decreaseItem: (id: number) => void;
   clearCart: () => void;
   getItemQuantity: (id: number) => number;
   isInCart: (id: number) => boolean;
@@ -38,21 +41,23 @@ export const useCartStore = create<CartState>()(
       addItem: (item) => {
         console.log('Добавляемый товар:', item); 
         const state = get();
-        const existingItem = state.items.find(i => i.id === item.id);
+        const existingItem = state.items.find(i => i.productId === item.productId);
+        const isCupsCategory = (item.category || '').toLowerCase() === 'стаканы';
+        const packageStep = isCupsCategory ? Math.max(1, parseInt(String(item.inPackage || '1')) || 1) : 1;
         
         if (existingItem) {
           // Если товар уже в корзине, увеличиваем количество
           set((state) => ({
             items: state.items.map(i => 
-              i.id === item.id 
-                ? { ...i, quantity: i.quantity + 1 }
+              i.productId === item.productId 
+                ? { ...i, quantity: i.quantity + packageStep }
                 : i
             )
           }));
         } else {
           // Добавляем новый товар
           set((state) => ({
-            items: [...state.items, { ...item, quantity: 1,guid: item.guid }]
+            items: [...state.items, { ...item, quantity: packageStep, guid: item.guid }]
           }));
         }
         
@@ -60,9 +65,42 @@ export const useCartStore = create<CartState>()(
         get().updateCalculations();
       },
 
+      increaseItem: (id) => {
+        const state = get();
+        const item = state.items.find(i => i.productId === id);
+        if (!item) return;
+        const isCupsCategory = (item.category || '').toLowerCase() === 'стаканы';
+        const packageStep = isCupsCategory ? Math.max(1, parseInt(String(item.inPackage || '1')) || 1) : 1;
+        set((state) => ({
+          items: state.items.map(i =>
+            i.productId === id ? { ...i, quantity: i.quantity + packageStep } : i
+          )
+        }));
+        get().updateCalculations();
+      },
+
+      decreaseItem: (id) => {
+        const state = get();
+        const item = state.items.find(i => i.productId === id);
+        if (!item) return;
+        const isCupsCategory = (item.category || '').toLowerCase() === 'стаканы';
+        const packageStep = isCupsCategory ? Math.max(1, parseInt(String(item.inPackage || '1')) || 1) : 1;
+        const nextQty = item.quantity - packageStep;
+        if (nextQty <= 0) {
+          get().removeItem(id);
+          return;
+        }
+        set((state) => ({
+          items: state.items.map(i =>
+            i.productId === id ? { ...i, quantity: nextQty } : i
+          )
+        }));
+        get().updateCalculations();
+      },
+
       removeItem: (id) => {
         set((state) => ({
-          items: state.items.filter(i => i.id !== id)
+          items: state.items.filter(i => i.productId !== id)
         }));
         get().updateCalculations();
       },
@@ -75,7 +113,7 @@ export const useCartStore = create<CartState>()(
         
         set((state) => ({
           items: state.items.map(i => 
-            i.id === id ? { ...i, quantity } : i
+            i.productId === id ? { ...i, quantity } : i
           )
         }));
         get().updateCalculations();
@@ -86,12 +124,12 @@ export const useCartStore = create<CartState>()(
       },
 
       getItemQuantity: (id) => {
-        const item = get().items.find(i => i.id === id);
+        const item = get().items.find(i => i.productId === id);
         return item ? item.quantity : 0;
       },
 
       isInCart: (id) => {
-        return get().items.some(i => i.id === id);
+        return get().items.some(i => i.productId === id);
       },
 
       updateCalculations: () => {
@@ -100,7 +138,7 @@ export const useCartStore = create<CartState>()(
         const subtotal = state.items.reduce((sum, item) => {
           return sum + (item.price * item.quantity);
         }, 0);
-        const deliveryCost = subtotal > 50000 ? 0 : 500; // Бесплатная доставка от 50000 сом
+        const deliveryCost = subtotal > 50000 ? 0 : 0;
         const total = subtotal + deliveryCost;
         
         set({ totalItems, subtotal, deliveryCost, total });
@@ -125,27 +163,25 @@ export const useCartStore = create<CartState>()(
           const nextItems = [...state.items];
 
           for (const orderItem of orderItems) {
-            const existingIndex = nextItems.findIndex(i => i.id === orderItem.id);
-            const image = orderItem.image || resolveImageForTitle(orderItem.title);
+            const existingIndex = nextItems.findIndex(i => i.productId === orderItem.productId);
+            const image = orderItem.url || resolveImageForTitle(orderItem.productName);
             if (existingIndex >= 0) {
               nextItems[existingIndex] = {
                 ...nextItems[existingIndex],
                 quantity: nextItems[existingIndex].quantity + orderItem.quantity,
-                image: nextItems[existingIndex].image || image,
+                url: nextItems[existingIndex].url || image,
               };
             } else {
               nextItems.push({
-                id: orderItem.id,
-                title: orderItem.title,
+                productId: orderItem.productId,
+                productName: orderItem.productName,
                 price: orderItem.price,
                 guid: orderItem.guid,
-                originalPrice: orderItem.originalPrice,
-                image,
-                isNew: orderItem.isNew,
-                discount: orderItem.discount,
+                oldPrice: orderItem.oldPrice,
                 category: orderItem.category,
                 url: orderItem.url,
                 quantity: orderItem.quantity,
+                inPackage: orderItem.inPackage
               });
             }
           }

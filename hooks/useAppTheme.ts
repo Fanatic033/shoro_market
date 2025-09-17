@@ -1,6 +1,7 @@
-import { Colors } from '@/utils/constants/Colors';
 import { useMemo } from 'react';
 import { useColorScheme } from 'react-native';
+
+import { Colors } from '@/utils/constants/Colors';
 
 export type ColorScheme = 'light' | 'dark';
 

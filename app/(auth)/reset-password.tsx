@@ -1,6 +1,3 @@
-import { ThemedText } from "@/components/ui/ThemedText";
-import { useResetPassword } from "@/services/useResetPassword";
-import { useAuthStore } from "@/store/authStore";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -14,6 +11,10 @@ import {
   View,
 } from "react-native";
 import { Toast } from "toastify-react-native";
+
+import { ThemedText } from "@/components/ui/ThemedText";
+import { useResetPassword } from "@/services/useResetPassword";
+import { useAuthStore } from "@/store/authStore";
 
 export default function ResetPasswordScreen() {
   const [newPassword, setNewPassword] = useState("");

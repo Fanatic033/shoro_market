@@ -1,10 +1,5 @@
-import CartItem from "@/components/Cart/CartItem"
-import { useBottomTabOverflow } from "@/components/ui/TabBarBackground"
-import { ThemedText } from "@/components/ui/ThemedText"
-import { useAppTheme } from "@/hooks/useAppTheme"
-import { useCartStore } from "@/store"
 import { Ionicons } from "@expo/vector-icons"
-import { useRouter } from "expo-router"
+import { useFocusEffect, useNavigation, useRouter } from "expo-router"
 import type React from "react"
 import {
   Alert,
@@ -16,9 +11,25 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Toast } from "toastify-react-native"
 
+import CartItem from "@/components/Cart/CartItem"
+import { ThemedText } from "@/components/ui/ThemedText"
+import { useAppTheme } from "@/hooks/useAppTheme"
+import { useCartStore } from "@/store"
+
 const CartScreen: React.FC = () => {
   const { colors, adaptiveColor } = useAppTheme();
+  const navigation = useNavigation();
   const router = useRouter();
+
+  useFocusEffect(() => {
+    const parent = navigation.getParent?.();
+    parent?.setOptions({
+      // tabBarStyle: { display: "none" },
+    });
+    return () => {
+      parent?.setOptions({ tabBarStyle: undefined });
+    };
+  });
 
   const { items: cartItems, subtotal, deliveryCost, total, updateQuantity, removeItem, clearCart } = useCartStore()
 
@@ -27,8 +38,8 @@ const CartScreen: React.FC = () => {
   }
 
   const handleRemoveItem = (productId: number) => {
-    const removedItem = cartItems.find((item) => item.id === productId)
-    Toast.success(`${removedItem?.title} удален из корзины`)
+    const removedItem = cartItems.find((item) => item.productId === productId)
+    Toast.success(`${removedItem?.productName} удален из корзины`)
     removeItem(productId)
   }
 
@@ -43,7 +54,6 @@ const CartScreen: React.FC = () => {
     router.push("/checkout")
   }
 
-  const bottomTabOverflow = useBottomTabOverflow()
 
   return (
     <>
@@ -68,7 +78,7 @@ const CartScreen: React.FC = () => {
               </TouchableOpacity>
               <FlatList
                 data={cartItems}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item) => item.productId.toString()}
                 renderItem={({ item }) => (
                   <CartItem item={item} onUpdateQuantity={handleUpdateQuantity} onRemoveItem={handleRemoveItem} />
                 )}
@@ -97,7 +107,7 @@ const CartScreen: React.FC = () => {
                   </View>
                 }
                 contentContainerStyle={{
-                  paddingBottom: bottomTabOverflow,
+                  // paddingBottom: bottomTabOverflow,
                 }}
               />
             </>

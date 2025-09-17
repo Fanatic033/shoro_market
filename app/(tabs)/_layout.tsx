@@ -1,9 +1,11 @@
-import CartBadge from "@/components/Cart/CartBadge";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { Platform, View } from "react-native";
+
+import CartBadge from "@/components/Cart/CartBadge";
+import TabBarBackground from "@/components/ui/TabBarBackground";
+
 import { HapticTab } from "../../components/ui/HapticTab";
-import TabBarBackground from "../../components/ui/TabBarBackground";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { Colors } from "../../utils/constants/Colors";
 

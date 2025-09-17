@@ -1,8 +1,3 @@
-import { useBottomTabOverflow } from "@/components/ui/TabBarBackground"
-import { useAppTheme } from "@/hooks/useAppTheme"
-import { useProfile } from "@/services/useProfile"
-import { useAuthStore } from "@/store"
-import axiosApi from "@/utils/instance"
 import { Ionicons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
 import React, { useState } from "react"
@@ -15,6 +10,12 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated"
 import { Toast } from "toastify-react-native"
+
+import { useBottomTabOverflow } from "@/components/ui/TabBarBackground"
+import { useAppTheme } from "@/hooks/useAppTheme"
+import { useProfile } from "@/services/useProfile"
+import { useAuthStore } from "@/store"
+import axiosApi from "@/utils/instance"
 
 export default function ProfileScreen() {
   const router = useRouter()

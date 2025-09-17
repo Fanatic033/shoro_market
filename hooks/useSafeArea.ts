@@ -1,6 +1,7 @@
-import { ANDROID_SAFE_AREA_BOTTOM, ANDROID_SAFE_AREA_TOP, ANDROID_STATUS_BAR_HEIGHT } from '@/utils/constants/constant';
 import { Dimensions, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { ANDROID_SAFE_AREA_BOTTOM, ANDROID_SAFE_AREA_TOP, ANDROID_STATUS_BAR_HEIGHT } from '@/utils/constants/constant';
 
 export const useSafeArea = () => {
   const insets = useSafeAreaInsets();

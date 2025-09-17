@@ -5,7 +5,6 @@ export { useOrderStore } from './orderStore';
 export { useProductStore } from './productStore';
 
 // Re-export types
-export type { Product } from '@/services/products';
 export type { UserAddress } from './addressStore';
 export type { CartItem } from './cartStore';
 export type { Order } from './orderStore';

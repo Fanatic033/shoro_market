@@ -1,8 +1,3 @@
-import BackButton from "@/components/ui/BackButton";
-import { ThemedText } from "@/components/ui/ThemedText";
-import { ThemedView } from "@/components/ui/ThemedView";
-import { useAppTheme } from "@/hooks/useAppTheme";
-import { useAddressStore } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
@@ -16,6 +11,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Toast } from "toastify-react-native";
+
+import BackButton from "@/components/ui/BackButton";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { ThemedView } from "@/components/ui/ThemedView";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import { useAddressStore } from "@/store";
 
 interface InputFieldProps {
   label: string;

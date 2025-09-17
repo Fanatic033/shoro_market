@@ -1,32 +1,12 @@
-import { ThemedText } from "@/components/ui/ThemedText";
-import { Order, useCartStore } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from 'expo-haptics';
 import { useRouter } from "expo-router";
 import React from "react";
 import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-type OrderStatus = Order["status"];
-// type OrderItem = Order["items"][0];
+import { ThemedText } from "@/components/ui/ThemedText";
+import { Order, useCartStore } from "@/store";
 
-const getStatusColor = (status: OrderStatus) => {
-  switch (status) {
-    case "delivered":
-      return { bg: "#e8f8f0", text: "#1e7e34" };
-    case "preparing":
-      return { bg: "#fff4e5", text: "#b85c00" };
-    case "cancelled":
-      return { bg: "#fdecec", text: "#c81e1e" };
-    case "pending":
-      return { bg: "#eff6ff", text: "#1d4ed8" };
-    case "confirmed":
-      return { bg: "#eff6ff", text: "#1d4ed8" };
-    case "delivering":
-      return { bg: "#ecfeff", text: "#155e75" };
-    default:
-      return { bg: "#eee", text: "#333" };
-  }
-};
 
 type Props = {
   order: Order;
@@ -36,30 +16,16 @@ type Props = {
 };
 
 const OrderCard: React.FC<Props> = ({ order, isMenuOpen, onToggleMenu, onCloseMenu }) => {
-  const colors = getStatusColor(order.status);
   const router = useRouter();
   const addItemsFromOrder = useCartStore((s) => s.addItemsFromOrder);
+
+  const total = order?.products.reduce((sum, item) => sum + item.price, 0)
 
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <ThemedText style={styles.orderId}>{order.id}</ThemedText>
         <View style={styles.headerRight}>
-          <View style={[styles.statusBadge, { backgroundColor: colors.bg }]}>
-            <ThemedText style={[styles.statusText, { color: colors.text }]}>
-              {order.status === "delivered"
-                ? "Доставлен"
-                : order.status === "preparing"
-                ? "Готовится"
-                : order.status === "pending"
-                ? "В ожидании"
-                : order.status === "confirmed"
-                ? "Подтверждён"
-                : order.status === "delivering"
-                ? "В пути"
-                : "Отменён"}
-            </ThemedText>
-          </View>
           <TouchableOpacity
             onPress={onToggleMenu}
             accessibilityLabel="Показать меню заказа"
@@ -73,7 +39,7 @@ const OrderCard: React.FC<Props> = ({ order, isMenuOpen, onToggleMenu, onCloseMe
                 style={styles.dropdownItem}
                 onPress={() => {
                   onCloseMenu();
-                  addItemsFromOrder(order.items);
+                  addItemsFromOrder(order.products);
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
                   setTimeout(() => {
                     router.push('/(tabs)/(cart)');
@@ -118,7 +84,7 @@ const OrderCard: React.FC<Props> = ({ order, isMenuOpen, onToggleMenu, onCloseMe
         <View style={[styles.row, { marginBottom: 0 }]}>
           <Ionicons name="cube" size={16} color="#6b7280" />
           <ThemedText style={styles.metaText}>
-            Товаров: {order.items.reduce((s, it) => s + it.quantity, 0)}
+            Товаров: {order.products.reduce((s, it) => s + it.quantity, 0)}
           </ThemedText>
         </View>
       </View>
@@ -126,14 +92,14 @@ const OrderCard: React.FC<Props> = ({ order, isMenuOpen, onToggleMenu, onCloseMe
       <View style={[styles.row, { marginBottom: 10 }]}>
         <Ionicons name="cash" size={16} color="#6b7280" />
         <ThemedText style={[styles.metaText, styles.total]}>
-          Итого: {order.total.toLocaleString("ru-RU")} с
+          Итого: {total} с
         </ThemedText>
       </View>
 
       <View style={styles.itemsPreview}>
-        {order.items.slice(0, 3).map((it) => (
-          <ThemedText key={it.id} numberOfLines={1} style={styles.itemLine}>
-            • {it.title} × {it.quantity}
+        {order.products.slice(0, 3).map((it) => (
+          <ThemedText key={it.productId} numberOfLines={1} style={styles.itemLine}>
+            • {it.productName} × {it.quantity}
           </ThemedText>
         ))}
       </View>

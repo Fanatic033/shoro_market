@@ -1,24 +1,24 @@
 
 export type IProduct = {
-    id: number;
-    title: string;
-    guid: string;
-    price: number;
-    image: any;
-    category: string;
-    inStock: boolean;
-    url?: string | null;
-    isNew?: boolean;
-    discount?: number;
-    originalPrice?: number;
+  url: string | null;
+  image?: string | number | { uri: string } | null;
+  productId: number;
+  guid: string
+  productName: string;
+  price: number;
+  oldPrice: string
+  category:string;
+  inPackage: string
   };
 
 export type ProductResponse = {
     url: string | null;
     productId: number;
+    guid: string
     productName: string;
     price: number;
-    category:string
-    guid: string
+    oldPrice: string
+    category:string;
+    inPackage: string
   };
   

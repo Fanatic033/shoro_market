@@ -1,20 +1,22 @@
-import { useCartStore } from '@/store';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+
+import { useCartStore } from '@/store';
 
 interface CartBadgeProps {
   size?: number;
 }
 
 const CartBadge: React.FC<CartBadgeProps> = ({ size = 20 }) => {
-  const { totalItems } = useCartStore();
+  const { items } = useCartStore();
+  const distinctCount = items.length;
 
-  if (totalItems === 0) return null;
+  if (distinctCount === 0) return null;
 
   return (
     <View style={[styles.badge, { width: size, height: size }]}>
       <Text style={[styles.text, { fontSize: size * 0.6 }]}>
-        {totalItems > 99 ? '99+' : totalItems}
+        {distinctCount > 99 ? '99+' : distinctCount}
       </Text>
     </View>
   );

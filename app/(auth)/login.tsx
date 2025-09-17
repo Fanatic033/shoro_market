@@ -1,7 +1,3 @@
-import { ThemedText } from "@/components/ui/ThemedText";
-import { useLogin } from "@/services/useLogin";
-import { useAuthStore } from "@/store/authStore";
-import { IUser } from "@/types/user.interface";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
@@ -17,6 +13,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Toast } from "toastify-react-native";
+
+import { ThemedText } from "@/components/ui/ThemedText";
+import { useLogin } from "@/services/useLogin";
+import { useAuthStore } from "@/store/authStore";
+import { IUser } from "@/types/user.interface";
 
 export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState("");

@@ -1,8 +1,9 @@
-import { IUpdateTokens } from "@/types/auth.interface";
-import { IUser } from "@/types/user.interface";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+
+import { IUpdateTokens } from "@/types/auth.interface";
+import { IUser } from "@/types/user.interface";
 
 interface AuthState {
   user: IUser | null;

@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View, ViewStyle } from "react-native";
+
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { Colors } from "../../utils/constants/Colors";
+
 import { ThemedView } from "./ThemedView";
 
 type SkeletonProps = {

@@ -1,7 +1,3 @@
-import { ThemedText } from "@/components/ui/ThemedText";
-import { useSafeArea } from "@/hooks/useSafeArea";
-import { useRegister } from "@/services/useRegister";
-import { useAuthStore } from "@/store/authStore"; // <-- Добавлено
 import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
@@ -16,6 +12,11 @@ import {
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import { ThemedText } from "@/components/ui/ThemedText";
+import { useSafeArea } from "@/hooks/useSafeArea";
+import { useRegister } from "@/services/useRegister";
+import { useAuthStore } from "@/store/authStore"; // <-- Добавлено
 
 export default function RegisterScreen() {
   // const [username, setUsername] = useState(""); // <-- Добавлено

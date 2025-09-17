@@ -1,4 +1,3 @@
-import { ThemedText } from "@/components/ui/ThemedText";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { router } from "expo-router";
@@ -13,6 +12,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Toast } from "toastify-react-native";
+
+import { ThemedText } from "@/components/ui/ThemedText";
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");

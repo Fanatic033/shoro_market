@@ -1,8 +1,10 @@
-import { useTheme } from '@/hooks/useTheme';
-import { CartItem as CartItemType } from '@/store';
 import { Image } from 'expo-image';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
+
+import { useTheme } from '@/hooks/useTheme';
+import { CartItem as CartItemType } from '@/store';
+
 import { ThemedText } from '../ui/ThemedText';
 
 interface CartItemProps {
@@ -18,27 +20,34 @@ interface CartItemProps {
 }
 
 const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemoveItem }) => {
-  const {  colors, adaptiveColor } = useTheme()
+  const {  colors } = useTheme()
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity < 1) return;
-    onUpdateQuantity?.(item.id, newQuantity);
+    onUpdateQuantity?.(item.productId, newQuantity);
+  };
+
+  const getStep = () => {
+    const isCupsCategory = (item.category || '').toLowerCase() === 'стаканы';
+    const parsed = parseInt(String(item.inPackage || '1'));
+    const step = isNaN(parsed) ? 1 : Math.max(1, parsed);
+    return isCupsCategory ? step : 1;
   };
 
   return (
     <View style={styles.container}>
-      <Image source={item.image} style={styles.image} />
+      <Image source={item.image ?? (item.url ? { uri: item.url as any } : undefined)} style={styles.image} />
 
       <View style={styles.details}>
-        <ThemedText style={styles.title}>{item.title}</ThemedText>
+        <ThemedText style={styles.title}>{item.productName}</ThemedText>
         <ThemedText style={styles.price}>
           {(item.price * item.quantity).toLocaleString('ru-RU')} c
         </ThemedText>
 
         <View style={styles.qtyContainer}>
           <TouchableOpacity
-            onPress={() => handleQuantityChange(item.quantity - 1)}
-            disabled={item.quantity <= 1}
+            onPress={() => handleQuantityChange(item.quantity - getStep())}
+            disabled={item.quantity <= getStep()}
             style={styles.qtyBtnContainer}
           >
             <ThemedText style={styles.qtyBtn}>-</ThemedText>
@@ -47,7 +56,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemoveIte
           <ThemedText style={styles.qtyCount}>{item.quantity}</ThemedText>
 
           <TouchableOpacity
-            onPress={() => handleQuantityChange(item.quantity + 1)}
+            onPress={() => handleQuantityChange(item.quantity + getStep())}
             style={styles.qtyBtnContainer}
           >
             <ThemedText style={styles.qtyBtn}>+</ThemedText>
@@ -55,7 +64,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemoveIte
         </View>
       </View>
 
-      <TouchableOpacity onPress={() => onRemoveItem?.(item.id)}>
+      <TouchableOpacity onPress={() => onRemoveItem?.(item.productId)}>
         <ThemedText style={[styles.removeText,{color: colors.text}]}>×</ThemedText>
       </TouchableOpacity>
     </View>

@@ -1,5 +1,6 @@
-import { useAuthStore } from "@/store";
 import { Redirect, Stack } from "expo-router";
+
+import { useAuthStore } from "@/store";
 
 export default function AuthLayout() {
   const { user, } = useAuthStore();

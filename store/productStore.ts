@@ -1,6 +1,7 @@
-import { IProduct } from '@/types/products.interface';
 import { Ionicons } from '@expo/vector-icons';
 import { create } from 'zustand';
+
+import { IProduct } from '@/types/products.interface';
 
 export interface Category {
   id: string;
@@ -105,7 +106,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
     // Фильтр по поиску
     if (searchQuery.trim()) {
       filtered = filtered.filter(p => 
-        p.title.toLowerCase().includes(searchQuery.toLowerCase())
+        p.productName.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     
@@ -118,7 +119,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         filtered = [...filtered].sort((a, b) => b.price - a.price);
         break;
       case 'name':
-        filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+        filtered = [...filtered].sort((a, b) => a.productName.localeCompare(b.productName));
         break;
       case 'newest':
         filtered = [...filtered];

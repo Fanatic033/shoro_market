@@ -1,15 +1,6 @@
-import CategoryList from "@/components/Category/CategoryList";
-import OrderCard from "@/components/Order/OrderCard";
-import ProductCard from "@/components/ProductCard";
-import { ProductSkeletonCard } from "@/components/ui/Skeleton";
-import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
-import { ThemedText } from "@/components/ui/ThemedText";
-import { Widget } from "@/components/ui/Widget";
-import { useAppTheme } from "@/hooks/useAppTheme";
-import { useAuthStore, useCartStore, useProductStore } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
-import React, {
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -29,6 +20,17 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import CategoryList from "@/components/Category/CategoryList";
+import OrderCard from "@/components/Order/OrderCard";
+import ProductCard from "@/components/ProductCard";
+import { ProductSkeletonCard } from "@/components/ui/Skeleton";
+import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { Widget } from "@/components/ui/Widget";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import type { Order } from "@/store";
+import { useAuthStore, useCartStore, useProductStore } from "@/store";
+
 const HomeScreen = () => {
   
   const {
@@ -41,7 +43,7 @@ const HomeScreen = () => {
     isLoading,
   } = useProductStore();
 
-  const { addItem, getItemQuantity, updateQuantity, removeItem } =
+  const { addItem, increaseItem, decreaseItem } =
     useCartStore();
   // Привязку userId к корзине делает authStore при логине/гидратации/логауте
 
@@ -71,40 +73,31 @@ const HomeScreen = () => {
 
   // const { orders } = useOrderStore();
   const lastTwoOrders = useMemo(() => {
-    const orders = [
+    const orders: Order[] = [
       {
         id: "#1245",
-        status: "delivered" as const,
         createdAt: new Date(),
         total: 850,
         deliveryAddress: "ул. Ленина, 1", 
         customerName: "Иван Иванов",
-        customerPhone: "+996 555 123 456",
+        contactPhone: "+996 555 123 456",
         deliveryDate: '12 сентября',
-        items: [
-          { id: 1, title: "Бургер", quantity: 2, price: 250, image: null, category: "Напитки" },
-          { id: 2, title: "Кола", quantity: 1, price: 100, image: null, category: "Стаканы" },
-          { id: 3, title: "Фри", quantity: 1, price: 250, image: null, category: "fast-food" },
+        products: [
+          { productId: 1, productName: "Бургер", quantity: 2, price: 250, url: null, category: "Напитки", guid: '1212', oldPrice: "", inPackage: "" },
+          { productId: 2, productName: "Кола", quantity: 1, price: 100, url: null, category: "Стаканы", guid: '1314', oldPrice: "", inPackage: "" },
+          { productId: 3, productName: "Фри", quantity: 1, price: 250, url: null, category: "fast-food", guid: '1415', oldPrice: "", inPackage: "" },
         ],
       },
       {
         id: "#1244",
-        status: "preparing" as const,
         createdAt: new Date(Date.now() - 1000 * 60 * 60),
         total: 450,
         deliveryAddress: "ул. Пушкина, 10",
         customerName: "Петр Петров",
-        customerPhone: "+996 555 654 321",
+        contactPhone: "+996 555 654 321",
         deliveryDate: '12 сентября',
-        items: [
-          {
-            id: 4,
-            title: "Пицца Маргарита",
-            quantity: 1,
-            price: 450,
-            image: null,
-            category: "pizza",
-          },
+        products: [
+          { productId: 4, productName: "Пицца Маргарита", quantity: 1, price: 450, url: null, category: "pizza", guid: '1515', oldPrice: "", inPackage: "" },
         ],
       },
     ];
@@ -157,23 +150,14 @@ const HomeScreen = () => {
   }, [addItem]);
   
   const increaseQty = useCallback((id: number) => {
-    const currentQty = getItemQuantity(id);
-    updateQuantity(id, currentQty + 1);
-    
+    increaseItem(id);
     impactAsync(ImpactFeedbackStyle.Light);
-  }, [getItemQuantity, updateQuantity]);
+  }, [increaseItem]);
   
   const decreaseQty = useCallback((id: number) => {
-    const currentQty = getItemQuantity(id);
-  
-    if (currentQty <= 1) {
-      removeItem(id);
-    } else {
-      updateQuantity(id, currentQty - 1);
-    }
-    
+    decreaseItem(id);
     impactAsync(ImpactFeedbackStyle.Light);
-  }, [getItemQuantity, removeItem, updateQuantity]);
+  }, [decreaseItem]);
   
 
   const bottomTabOverflow = useBottomTabOverflow();
@@ -306,7 +290,7 @@ const HomeScreen = () => {
             ) : (
               <FlatList
                 data={getFilteredProducts()}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item) => item.productId.toString()}
                 numColumns={numColumns}
                 renderItem={({ item }) => (
                   <ProductCard

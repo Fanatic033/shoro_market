@@ -1,9 +1,11 @@
-import { PAYMENT_METHOD_MAP, PAYMENT_METHODS } from '@/utils/constants/paymentMethods';
-import axiosApi from '@/utils/instance';
-import { getUserIdFromToken } from '@/utils/jwt-decode';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+
+import { PAYMENT_METHOD_MAP, PAYMENT_METHODS } from '@/utils/constants/paymentMethods';
+import axiosApi from '@/utils/instance';
+import { getUserIdFromToken } from '@/utils/jwt-decode';
+
 import { useAuthStore } from "./authStore";
 import { CartItem } from './cartStore';
 
@@ -16,6 +18,7 @@ export interface Order {
   contactPhone: string;
   description?: string;
   deliveryDate: string;
+  total?: number;
   // status: 'В ожидании' | 'Завершен' | 'Обрабатывается' | 'В пути' | 'Доставлен' | 'Отменен';
   createdAt: Date;
   estimatedDelivery?: Date;

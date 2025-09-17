@@ -1,6 +1,7 @@
+import { Redirect } from "expo-router";
+
 import { useAuthStore } from "@/store";
 import { useOnBoardingStore } from "@/store/onBoardingStore";
-import { Redirect } from "expo-router";
 
 export default function Index() {
   const { hasSeenOnBoarding } = useOnBoardingStore();

@@ -1,9 +1,10 @@
 // services/useProfile.ts
+import { useEffect, useState } from "react";
+
 import { useAuthStore } from "@/store/authStore";
 import { IUser } from "@/types/user.interface";
 import axiosApi from "@/utils/instance";
 import { getUserIdFromToken } from "@/utils/jwt-decode";
-import { useEffect, useState } from "react";
 
 export function useProfile() {
   const { user, setUser } = useAuthStore();

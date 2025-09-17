@@ -1,12 +1,13 @@
-import { ThemedText } from "@/components/ui/ThemedText";
-import { useVerifyCode } from "@/services/useVerifyCode";
-import { useAuthStore } from "@/store/authStore";
-import axiosApi from "@/utils/instance";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, TouchableWithoutFeedback, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Toast } from "toastify-react-native";
+
+import { ThemedText } from "@/components/ui/ThemedText";
+import { useVerifyCode } from "@/services/useVerifyCode";
+import { useAuthStore } from "@/store/authStore";
+import axiosApi from "@/utils/instance";
 
 export default function VerifyCodeScreen() {
   const [code, setCode] = useState(["", "", "", "", "", ""]);

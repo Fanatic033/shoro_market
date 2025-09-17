@@ -1,17 +1,24 @@
-import { ThemedText } from "@/components/ui/ThemedText";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { Product } from "@/services/products";
-import { useCartStore } from "@/store";
-import { Colors } from "@/utils/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React from "react";
-import { Animated, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import {
+  Animated,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+
+import { ThemedText } from "@/components/ui/ThemedText";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { useCartStore } from "@/store";
+import { IProduct } from "@/types/products.interface";
+import { Colors } from "@/utils/constants/Colors";
 
 type Props = {
-  item: Product;
+  item: IProduct;
   isDark: boolean;
-  addToCart: (product: Product) => void;
+  addToCart: (product: IProduct) => void;
   increaseQty: (id: number) => void;
   decreaseQty: (id: number) => void;
   CARD_WIDTH: number;
@@ -33,25 +40,29 @@ const ProductCard = ({
   const qtyScale = React.useRef(new Animated.Value(1)).current;
   const CONTROL_MIN_WIDTH = 40;
   const CONTROL_MAX_WIDTH = CARD_WIDTH - 20;
-  const controlWidth = React.useRef(new Animated.Value(isInCart(item.id) ? CONTROL_MAX_WIDTH : CONTROL_MIN_WIDTH)).current;
+  const controlWidth = React.useRef(
+    new Animated.Value(
+      isInCart(item.productId) ? CONTROL_MAX_WIDTH : CONTROL_MIN_WIDTH
+    )
+  ).current;
 
   React.useEffect(() => {
-    const target = isInCart(item.id) ? CONTROL_MAX_WIDTH : CONTROL_MIN_WIDTH;
+    const target = isInCart(item.productId) ? CONTROL_MAX_WIDTH : CONTROL_MIN_WIDTH;
     Animated.timing(controlWidth, {
       toValue: target,
       duration: 250,
       useNativeDriver: false,
     }).start();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isInCart(item.id)]);
+  }, [isInCart(item.productId)]);
 
   const formatPrice = (value: number) => {
-    if (value === null || value === undefined) return '0';
+    if (value === null || value === undefined) return "0";
     const rounded = Math.round((value + Number.EPSILON) * 100) / 100;
     return Number.isInteger(rounded) ? String(rounded) : String(rounded);
   };
 
-  const color = isDark ? 'white' : 'black'
+  const color = isDark ? "white" : "black";
 
   return (
     <View
@@ -65,7 +76,7 @@ const ProductCard = ({
       ]}
     >
       {/* Бейджи */}
-      <View style={styles.badges}>
+      {/* <View style={styles.badges}>
         {item.isNew && (
           <View style={[styles.badge, styles.newBadge]}>
             <ThemedText style={styles.badgeText}>NEW</ThemedText>
@@ -76,10 +87,10 @@ const ProductCard = ({
             <ThemedText style={styles.badgeText}>-{item.discount}%</ThemedText>
           </View>
         )}
-      </View>
+      </View> */}
 
       <TouchableWithoutFeedback>
-        <Image source={item.image} style={styles.image} transition={300}/>
+        <Image source={item.image} style={styles.image} transition={300} />
       </TouchableWithoutFeedback>
 
       <View style={styles.productInfo}>
@@ -89,15 +100,17 @@ const ProductCard = ({
             numberOfLines={2}
             ellipsizeMode="tail"
           >
-            {item.title}
+            {item.productName}
           </ThemedText>
         </TouchableOpacity>
 
         <View style={styles.priceContainer}>
-          <ThemedText style={styles.price}>{formatPrice(item.price)} с</ThemedText>
-          {item.originalPrice && (
+          <ThemedText style={styles.price}>
+            {formatPrice(item.price)} с
+          </ThemedText>
+          {item.oldPrice  && Number(item.oldPrice) !== item.price && (
             <ThemedText style={styles.originalPrice}>
-              {formatPrice(item.originalPrice)} с
+              {item.oldPrice} с
             </ThemedText>
           )}
         </View>
@@ -106,7 +119,7 @@ const ProductCard = ({
       {/* Контролы */}
       <View style={styles.qtyContainer}>
         <Animated.View style={[styles.controlWrapper, { width: controlWidth }]}>
-          {isInCart(item.id) ? (
+          {isInCart(item.productId) ? (
             <View
               style={[
                 styles.qtyControl,
@@ -119,44 +132,76 @@ const ProductCard = ({
               <TouchableOpacity
                 onPress={() => {
                   Animated.sequence([
-                    Animated.timing(minusScale, { toValue: 0.9, duration: 70, useNativeDriver: true }),
-                    Animated.spring(minusScale, { toValue: 1, useNativeDriver: true })
+                    Animated.timing(minusScale, {
+                      toValue: 0.9,
+                      duration: 70,
+                      useNativeDriver: true,
+                    }),
+                    Animated.spring(minusScale, {
+                      toValue: 1,
+                      useNativeDriver: true,
+                    }),
                   ]).start();
                   Animated.sequence([
-                    Animated.timing(qtyScale, { toValue: 1.08, duration: 80, useNativeDriver: true }),
-                    Animated.spring(qtyScale, { toValue: 1, useNativeDriver: true })
+                    Animated.timing(qtyScale, {
+                      toValue: 1.08,
+                      duration: 80,
+                      useNativeDriver: true,
+                    }),
+                    Animated.spring(qtyScale, {
+                      toValue: 1,
+                      useNativeDriver: true,
+                    }),
                   ]).start();
-                  decreaseQty(item.id);
+                  decreaseQty(item.productId);
                 }}
                 style={styles.qtyBtnContainer}
               >
                 <Animated.View style={{ transform: [{ scale: minusScale }] }}>
-                  {/* <ThemedText style={styles.qtyBtn}>-</ThemedText> */}
-                  <Ionicons name="remove-circle-outline" size={35} color={color}/>
+                  <Ionicons
+                    name="remove-circle-outline"
+                    size={35}
+                    color={color}
+                  />
                 </Animated.View>
               </TouchableOpacity>
-              <Animated.View style={{ flex: 1, transform: [{ scale: qtyScale }] }}>
+              <Animated.View
+                style={{ flex: 1, transform: [{ scale: qtyScale }] }}
+              >
                 <ThemedText style={styles.qtyCount}>
-                  {getItemQuantity(item.id)}
+                  {getItemQuantity(item.productId)}
                 </ThemedText>
               </Animated.View>
               <TouchableOpacity
                 onPress={() => {
                   Animated.sequence([
-                    Animated.timing(plusScale, { toValue: 0.9, duration: 70, useNativeDriver: true }),
-                    Animated.spring(plusScale, { toValue: 1, useNativeDriver: true })
+                    Animated.timing(plusScale, {
+                      toValue: 0.9,
+                      duration: 70,
+                      useNativeDriver: true,
+                    }),
+                    Animated.spring(plusScale, {
+                      toValue: 1,
+                      useNativeDriver: true,
+                    }),
                   ]).start();
                   Animated.sequence([
-                    Animated.timing(qtyScale, { toValue: 1.08, duration: 80, useNativeDriver: true }),
-                    Animated.spring(qtyScale, { toValue: 1, useNativeDriver: true })
+                    Animated.timing(qtyScale, {
+                      toValue: 1.08,
+                      duration: 80,
+                      useNativeDriver: true,
+                    }),
+                    Animated.spring(qtyScale, {
+                      toValue: 1,
+                      useNativeDriver: true,
+                    }),
                   ]).start();
-                  increaseQty(item.id);
+                  increaseQty(item.productId);
                 }}
                 style={styles.qtyBtnContainer}
               >
                 <Animated.View style={{ transform: [{ scale: plusScale }] }}>
-                  {/* <ThemedText style={styles.qtyBtn}>+</ThemedText> */}
-                  <Ionicons name="add-circle-outline" size={35} color={color}/>
+                  <Ionicons name="add-circle-outline" size={35} color={color} />
                 </Animated.View>
               </TouchableOpacity>
             </View>
@@ -165,22 +210,29 @@ const ProductCard = ({
               style={styles.addBtn}
               onPress={() => {
                 Animated.sequence([
-                  Animated.timing(plusScale, { toValue: 0.9, duration: 70, useNativeDriver: true }),
-                  Animated.spring(plusScale, { toValue: 1, useNativeDriver: true })
+                  Animated.timing(plusScale, {
+                    toValue: 0.9,
+                    duration: 70,
+                    useNativeDriver: true,
+                  }),
+                  Animated.spring(plusScale, {
+                    toValue: 1,
+                    useNativeDriver: true,
+                  }),
                 ]).start();
                 addToCart(item);
               }}
             >
               <Animated.View style={{ transform: [{ scale: plusScale }] }}>
                 {/* <ThemedText style={styles.addBtnText}> */}
-                  <Ionicons name="add-circle-outline" size={40} color={color}/>
-                  {/* </ThemedText> */}
+                <Ionicons name="add-circle-outline" size={40} color={color} />
+                {/* </ThemedText> */}
               </Animated.View>
             </TouchableOpacity>
           )}
         </Animated.View>
       </View>
-{/* 
+      {/* 
       <Modal
         visible={infoVisible}
         animationType="fade"
@@ -203,7 +255,7 @@ const ProductCard = ({
 
 export default React.memo(ProductCard, (prev, next) => {
   return (
-    prev.item?.id === next.item?.id &&
+    prev.item?.productId === next.item?.productId &&
     prev.isDark === next.isDark &&
     prev.CARD_WIDTH === next.CARD_WIDTH
   );
@@ -289,7 +341,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   qtyBtn: { color: "#fff", fontSize: 24, fontWeight: "bold" },
-  qtyCount: { fontSize: 18, fontWeight: "700", textAlign: "center", },
+  qtyCount: { fontSize: 18, fontWeight: "700", textAlign: "center" },
   addBtn: {
     // width: 40,
     // height: 40,
@@ -302,38 +354,38 @@ const styles = StyleSheet.create({
   addBtnText: { color: "#fff", fontSize: 20, fontWeight: "600" },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 24,
   },
   modalCard: {
-    width: '100%',
+    width: "100%",
     maxWidth: 420,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
   },
   modalTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 8,
   },
   modalText: {
     fontSize: 14,
-    color: '#666666',
+    color: "#666666",
     marginBottom: 16,
   },
   modalButton: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#000000',
+    alignSelf: "flex-end",
+    backgroundColor: "#000000",
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 10,
   },
   modalButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+    color: "#FFFFFF",
+    fontWeight: "600",
   },
 });

@@ -1,7 +1,8 @@
-import axiosApi from "@/utils/instance";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { jwtDecode } from "jwt-decode";
+
+import axiosApi from "@/utils/instance";
 
 interface IResetPasswordParams {
   password: string;

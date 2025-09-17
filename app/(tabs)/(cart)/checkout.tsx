@@ -1,23 +1,24 @@
+import { Ionicons } from "@expo/vector-icons";
+import RNDateTimePicker from "@react-native-community/datetimepicker";
+import { useFocusEffect, useNavigation, useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  TextInput,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Toast } from "toastify-react-native";
+
 import BackButton from "@/components/ui/BackButton";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useAddressStore, useAuthStore, useCartStore, useOrderStore } from "@/store";
 import { PAYMENT_METHODS } from "@/utils/constants/paymentMethods";
-import { Ionicons } from "@expo/vector-icons";
-import RNDateTimePicker from "@react-native-community/datetimepicker";
-import { useFocusEffect, useNavigation, useRouter } from "expo-router";
-import React, { useEffect, useState } from 'react';
-import {
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    TextInput,
-    View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Toast } from "toastify-react-native";
 
 export default function CheckoutScreen() {
   const { adaptiveColor, isDark } = useAppTheme();
@@ -49,14 +50,26 @@ export default function CheckoutScreen() {
  
 
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [checkoutForm, setCheckoutForm] = useState({
+  const initialForm = useMemo(() => ({
     name: user?.name || "",
     contactPhone: user?.phoneNumber || "",
     address: defaultAddress?.fullAddress || "",
     description: "",
     deliveryDate: new Date(Date.now() + 86400000),
     paymentMethod: "наличные",
-  });
+  }), [user?.name, user?.phoneNumber, defaultAddress?.fullAddress])
+
+  const [checkoutForm, setCheckoutForm] = useState(initialForm);
+
+  // When user or default address changes (e.g., profile just fetched), prefill empty fields
+  useEffect(() => {
+    setCheckoutForm(prev => ({
+      ...prev,
+      name: prev.name || initialForm.name,
+      contactPhone: prev.contactPhone || initialForm.contactPhone,
+      address: initialForm.address || prev.address,
+    }))
+  }, [initialForm])
 
   // Обновляем адрес в форме при изменении defaultAddress
   useEffect(() => {

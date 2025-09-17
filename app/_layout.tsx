@@ -1,6 +1,3 @@
-import { useAuthStore } from "@/store/authStore"
-import { useCartStore } from "@/store/cartStore"
-import { useOnBoardingStore } from "@/store/onBoardingStore"
 import { Ionicons } from "@expo/vector-icons"
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -13,6 +10,11 @@ import { Platform, useColorScheme } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import ToastManager from "toastify-react-native/components/ToastManager"
+
+import { useProfile } from "@/services/useProfile"
+import { useAuthStore } from "@/store/authStore"
+import { useCartStore } from "@/store/cartStore"
+import { useOnBoardingStore } from "@/store/onBoardingStore"
 
 export const unstable_settings = { initialRouteName: "(auth)" }
 
@@ -27,6 +29,9 @@ export default function RootLayout() {
   const [authHydrated, setAuthHydrated] = useState(false)
   const [onboardingHydrated, setOnboardingHydrated] = useState(false)
   const [cartHydrated, setCartHydrated] = useState(false)
+
+  // Keep user profile in sync globally once tokens are available
+  useProfile()
 
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),

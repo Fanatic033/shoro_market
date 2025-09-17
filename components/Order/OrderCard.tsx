@@ -1,10 +1,12 @@
-import { useColorScheme } from "@/hooks/useColorScheme";
-import type { Order } from "@/store";
-import { Colors } from "@/utils/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+
+import { useColorScheme } from "@/hooks/useColorScheme";
+import type { Order } from "@/store";
+import { Colors } from "@/utils/constants/Colors";
+
 import { ThemedText } from "../ui/ThemedText";
 
 type Props = {
@@ -13,7 +15,7 @@ type Props = {
 };
 
 
-const getStatusConfig = (status: Order["status"]) => {
+const getStatusConfig = (status?: string) => {
     switch (status) {
       case "pending":
         return { bg: "#fffbeb", text: "#92400e", label: "В ожидании" };
@@ -61,7 +63,7 @@ const OrderCard: React.FC<Props> = ({ order, index, }) => {
     );
   }
 
-  const statusConfig = getStatusConfig(order.status);
+  const statusConfig = getStatusConfig((order as any).status);
 
   return (
     <TouchableOpacity
@@ -97,8 +99,7 @@ const OrderCard: React.FC<Props> = ({ order, index, }) => {
           <ThemedText
             style={[styles.orderMetaText, { color: Colors[scheme].text }]}
           >
-            {order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0}{" "}
-            товаров
+            {order.products?.reduce((sum, item) => sum + item.quantity, 0) || 0} товаров
           </ThemedText>
         </View>
       </View>

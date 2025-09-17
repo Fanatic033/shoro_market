@@ -1,6 +1,8 @@
-import { useTheme } from "@/hooks/useTheme";
 import React from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
+
+import { useTheme } from "@/hooks/useTheme";
+
 import { ThemedText } from "../ui/ThemedText";
 
 interface CategoryCardProps {

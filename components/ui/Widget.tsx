@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+
 import { ThemedText } from "./ThemedText";
 
 export const Widget = ({ item }: any) => (

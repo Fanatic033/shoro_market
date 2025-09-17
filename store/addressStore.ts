@@ -1,8 +1,10 @@
-import axiosApi from "@/utils/instance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Toast } from "toastify-react-native";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+
+import axiosApi from "@/utils/instance";
+
 import { useAuthStore } from "./authStore";
 
 export interface UserAddress {

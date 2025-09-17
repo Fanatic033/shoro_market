@@ -1,10 +1,11 @@
-import { useOnBoardingStore } from "@/store/onBoardingStore"
 import { Ionicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
 import { useRouter } from "expo-router"
 import { useEffect, useRef, useState } from "react"
 import { Animated, Dimensions, type FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+
+import { useOnBoardingStore } from "@/store/onBoardingStore"
 
 const { width, height } = Dimensions.get("window")
 

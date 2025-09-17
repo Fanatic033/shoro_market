@@ -1,9 +1,3 @@
-import OrderCard from "@/components/Order/OrderDetail";
-import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
-import { ThemedText } from "@/components/ui/ThemedText";
-import { useAppTheme } from "@/hooks/useAppTheme";
-import { useSafeArea } from "@/hooks/useSafeArea";
-import { Order } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useState } from "react";
 import {
@@ -15,42 +9,89 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import OrderCard from "@/components/Order/OrderDetail";
+import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import { useSafeArea } from "@/hooks/useSafeArea";
+import { Order } from "@/store";
+
 const initialOrders: Order[] = [
   {
     id: "#1245",
     createdAt: new Date("2024-08-12"),
-    status: "delivered",
-    total: 1250,
     deliveryAddress: "ул. Ленина, 1",
     customerName: "Иван Иванов",
-    customerPhone: "+996 555 123 456",
+    contactPhone: "+996 555 123 456",
     deliveryDate: '12 сентября',
-    items: [
-      { id: 1, title: "ШОРО Чалап Классический 0.5л", quantity: 1, price: 500, image: null, category: "drinks" },
-      { id: 2, title: "ШОРО Айран Традиционный 0.5л", quantity: 2, price: 375, image: null, category: "drinks" },
+    products: [
+      {
+        productId: 1,
+        productName: "ШОРО Чалап Классический 0.5л",
+        quantity: 1,
+        price: 500,
+        image: null,
+        category: "drinks",
+        guid: '122',
+        url: null,
+        oldPrice: "",
+        inPackage: ""
+      },
+      {
+        productId: 2,
+        productName: "ШОРО Айран Традиционный 0.5л",
+        quantity: 2,
+        price: 375,
+        image: null,
+        category: "drinks",
+        guid: '1212',
+        url: null,
+        oldPrice: "",
+        inPackage: ""
+      },
     ],
   },
   {
     id: "#1244",
     createdAt: new Date("2024-08-05"),
-    status: "preparing",
     total: 860,
     deliveryAddress: "ул. Пушкина, 10",
     customerName: "Петр Петров",
-    customerPhone: "+996 555 654 321",
+    contactPhone: "+996 555 654 321",
     deliveryDate: '12 сентября',
-    items: [{ id: 3, title: "ШОРО Боза Домашняя 0.5л", quantity: 2, price: 430, image: null, category: "drinks" }],
+    products: [{
+      productId: 3,
+      productName: "ШОРО Боза Домашняя 0.5л",
+      quantity: 2,
+      price: 430,
+      image: null,
+      category: "drinks",
+      guid: '1313',
+      url: null,
+      oldPrice: "",
+      inPackage: ""
+    }],
   },
   {
     id: "#1243",
     createdAt: new Date("2024-07-29"),
-    status: "cancelled",
     total: 540,
     deliveryAddress: "ул. Гагарина, 5",
     customerName: "Сергей Сергеев",
-    customerPhone: "+996 555 789 123",
+    contactPhone: "+996 555 789 123",
     deliveryDate: '12 сентября',
-    items: [{ id: 4, title: "ШОРО Тан с мятой 0.5л", quantity: 1, price: 540, image: null, category: "drinks" }],
+    products: [{
+      productId: 4,
+      productName: "ШОРО Тан с мятой 0.5л",
+      quantity: 1,
+      price: 540,
+      image: null,
+      category: "drinks",
+      guid: '1414',
+      url: null,
+      oldPrice: "",
+      inPackage: ""
+    }],
   },
 ];
 

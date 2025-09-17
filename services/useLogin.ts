@@ -1,7 +1,8 @@
-import { IAuthFormData, IAuthResponse } from '@/types/auth.interface';
-import axiosApi from '@/utils/instance';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
+
+import { IAuthFormData, IAuthResponse } from '@/types/auth.interface';
+import axiosApi from '@/utils/instance';
 
 export const useLogin = () => {
   return useMutation({
